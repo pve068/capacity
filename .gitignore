@@ -1,0 +1,18 @@
+# For the frontend
+logs/*
+!.gitkeep
+node_modules/
+bower_components/
+tmp/
+.DS_Store
+.idea
+.vscode
+.jsbeautifyrc
+.jshintrc
+app/tmp/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.ini

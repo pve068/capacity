@@ -1,0 +1,27 @@
+<div class="row mobile-padding">
+    <div class="small-12 large-3 columns">
+        <label>Service-Direction</label>
+        <select ng-model="vm.selectedService" ng-change="vm.fetchWeeks()" ng-options="y.name for (x,y) in vm.services"></select>
+    </div>
+
+    <div class="small-12 large-2 columns">
+        <label>Departure Week</label>
+        <select ng-model="vm.selectedWeek" ng-change="vm.fetchVV()" ng-disabled="vm.disableWeeksList" ng-options="x for x in vm.weeks"></select>
+    </div>
+
+    <div class="small-12 large-3 columns">
+        <label>Vessel-Voyage</label>
+        <select ng-model="vm.selectedVV" ng-change="vm.fetchLegs()" ng-disabled="vm.disableVVList" ng-options="y.name for (x,y) in vm.vv"></select>
+    </div>
+    <div class="small-12 large-4 columns">
+        <label>Leg</label>
+        <select ng-model="vm.selectedLeg" ng-disabled="vm.disableLegsList" ng-options="y.leg for (x,y) in vm.legs.legs">
+        </select>
+    </div>
+</div>
+<div class="row">
+    <div class="small-6 small-offset-3 large-4 large-offset-4 columns text-center">
+        <button class="button small" ng-click="vm.loadState()">Draw</button>
+    </div>
+</div>
+<div ui-view></div>

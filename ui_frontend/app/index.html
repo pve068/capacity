@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html lang="en" ng-app="capx" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="capx" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="capx" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html lang="en" ng-app="capx" class="no-js">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="">
+  <title>Capacity</title>
+  <link rel="shortcut icon" href="assets/img/favicon.ico">
+  <!--<link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/normalize.css">-->
+  <!--<link rel="stylesheet" href="bower_components/html5-boilerplate/dist/css/main.css">-->
+  <link href="app.css" rel="stylesheet">
+  <link href="topbar.css" rel="stylesheet">
+  <link href="custom.css" rel="stylesheet">
+  <link href="uboat.css" rel="stylesheet">
+  <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+</head>
+
+<body>
+  <div class="contain-to-grid header-section">
+
+    <!-- TOPBAR SECTION -->
+    <nav class="top-bar important-class" data-topbar role="navigation">
+      <!-- TITLE AREA & LOGO -->
+      <ul class="title-area">
+        <li class="name">
+          <a href="#"><img src="assets/img/Maersk_Line_Logo.svg" alt="" id="logo-image">
+          </a>
+        </li>
+        <li class="toggle-topbar menu-icon"><a href="#"><span></span></a>
+        </li>
+      </ul>
+      <!-- END TITLE AREA & LOGO -->
+
+      <!-- MENU ITEMS -->
+      <section class="top-bar-section">
+        <ul class="right">
+          <li class="active"><a ui-sref="home">HOME</a>
+          </li>
+          <li><a ui-sref="capacity">CAPACITY</a>
+          </li>
+          <li><a ui-sref="settings">SETTINGS</a>
+          </li>
+        </ul>
+      </section>
+      <!-- END MENU ITEMS -->
+    </nav>
+    <!-- END TOPBAR SECTION -->
+  </div>
+  <!-- END HEADER SECTION -->
+  <!-- CONTENT FILL WHEN SCROLL = 0 -->
+  <div class="header-fill"></div>
+
+  <div id="skrollr-body"> </div>
+  <!-- END TOPBAR SECTION -->
+  <div class="content-section">
+    <div class="main-content">
+      <div ui-view></div>
+    </div>
+  </div>
+
+
+  <!-- [if !IE]><!-->
+  <script type="text/javascript" src="lib/skrollr.min.js"></script>
+
+  <!--[if lt IE 7]>
+<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]-->
+
+  <!-- In production use:
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
+-->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/1.0.3/angular-ui-router.js"></script>
+  <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.4-rc2/foundation.js"></script>-->
+
+  <script src="bower_components/chart.js/dist/Chart.js"></script>
+  <script src="bower_components/angular-chart.js/dist/angular-chart.js"></script>
+  <script src="bower_components/angular-foundation/mm-foundation-tpls.js"></script>
+
+  <script src="app.js"></script>
+  <script src="capacity/capacity.js"></script>
+  <script src="byservice/byservice.js"></script>
+
+  <script src="byleg/byleg.js"></script>
+  <script src="byweek/byweek.js"></script>
+
+  <script src="byotherlegs/byotherlegs.js"></script>
+  <script src="byhistorical/byhistorical.js"></script>
+
+  <script src="customuboat/customuboat.js"></script>
+  <script src="byuboat/byuboat.js"></script>
+
+  <script src="services/url.service.js"></script>
+  <script src="services/helper.service.js"></script>
+  <script src="services/pref.service.js"></script>
+  <script src="services/leg.service.js"></script>
+  <script src="services/chart.service.js"></script>
+
+  <!-- Load the templates -->
+  <!--<script id="vv_not_selected.tpl" type="text/ng-template" src="capacity/message/vv_not_selected.template.html"></script>-->
+</body>
+
+</html>

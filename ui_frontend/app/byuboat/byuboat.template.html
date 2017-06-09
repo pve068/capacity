@@ -1,0 +1,42 @@
+<div class="row mobile-padding">
+    <div class="small-12 large-12 columns text-center">
+        <h5>Showing the contents of the selected leg in U-boat format</h5>
+    </div>
+</div>
+<div class="row text-center">
+    <div class="small-12 column">
+        <div class="note">
+            <strong>Note:</strong>The size of the VSA and Empty allocation does not represent the accurate proportion of
+            the vessel
+        </div>
+    </div>
+</div>
+<div class="row text-center expanded">
+    <div class="small-12 column">
+        <div class="legend">
+            <div class="entry">
+                <div class="box red-box"></div>
+                > 100%
+            </div>
+            <div class="entry">
+                <div class="box green-box"></div>
+                100% - 60%
+            </div>
+            <div class="entry">
+                <div class="box yellow-box"></div>
+                < 60% </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mobile-padding expanded">
+        <div class="small-12 large-4 column text-center">
+            <customuboat unit="teu" definition="vm.uboat.teu.dd" data="vm.uboat.teu.data"></customuboat>
+        </div>
+        <div class="small-12 large-4 column text-center">
+            <customuboat unit="mts" definition="vm.uboat.mts.dd" data="vm.uboat.mts.data"></customuboat>
+        </div>
+        <div class="small-12 large-4 column text-center">
+            <customuboat unit="plugs" definition="vm.uboat.plugs.dd" data="vm.uboat.plugs.data"></customuboat>
+        </div>
+    </div>
+</div>

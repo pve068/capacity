@@ -1,0 +1,30 @@
+<!--
+<div class="row mobile-padding">
+    <div class="small-12 large-12 columns">
+        <select ng-model="vm.chart.unit" ng-options="x for x in vm.chartUnits" ng-change="vm.refreshCharts()">
+        </select>
+    </div>
+</div>
+-->
+<div class="row mobile-padding">
+    <div class="small-12 large-12 columns text-center">
+        <h5>Capacity and consumption for vessels departing in the given week</h5>
+    </div>
+</div>
+<div class="row mobile-padding expanded">
+    <div class="small-12 large-4 columns">
+        <canvas class="chart chart-bar" height="250px" chart-options="vm.chart.teu.options" chart-data="vm.chart.teu.data" chart-colors="vm.chart.teu.colors"
+            , chart-dataset-override="vm.chart.teu.datasetOverride" chart-labels="vm.chart.teu.labels">
+        </canvas>
+    </div>
+    <div class="small-12 large-4 columns">
+        <canvas class="chart chart-bar" height="250px" chart-options="vm.chart.mts.options" chart-data="vm.chart.mts.data" chart-colors="vm.chart.mts.colors"
+            , chart-dataset-override="vm.chart.mts.datasetOverride" chart-labels="vm.chart.mts.labels">
+        </canvas>
+    </div>
+    <div class="small-12 large-4 columns">
+        <canvas class="chart chart-bar" height="250px" chart-options="vm.chart.plugs.options" chart-data="vm.chart.plugs.data" chart-colors="vm.chart.plugs.colors"
+            , chart-dataset-override="vm.chart.plugs.datasetOverride" chart-labels="vm.chart.plugs.labels">
+        </canvas>
+    </div>
+</div>

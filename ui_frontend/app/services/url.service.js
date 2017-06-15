@@ -1,5 +1,6 @@
+"use strict";
 angular.module('capx').factory(
-    'urlService', [function () {
+    'urlService', ['$rootScope', '$log', function ($rootScope, $log) {
         return ({
             getBaseUrl: getBaseUrl,
         });
@@ -7,9 +8,18 @@ angular.module('capx').factory(
         /**
          * Returns the base url. This was wrapped inside a service
          * to ensure a single point of failure i.e, if the URL gets
-         * changed, then you'd only need to change it at once place
+         * changed, then you'd only need to change it at once place.
+         * The appConfig here comes from the global app.config.js 
+         * file. The reason being that this endpoint is subjected to
+         * change and that change should be reflected from the CI/CD
+         * tool and not the code.
          */
         function getBaseUrl() {
-            return 'http://localhost:5000/v1.0/';
+            if ($rootScope.config.hasOwnProperty("server_url"))
+                return $rootScope.config.server_url;
+            else {
+                $log.log("Could not reach the server. Endpoint not available");
+                return null;
+            }
         }
     }]);

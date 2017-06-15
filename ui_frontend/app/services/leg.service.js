@@ -1,3 +1,4 @@
+"use strict";
 angular.module('capx').factory(
     'legService', ['$http', 'helperService', 'urlService', function ($http, helperService, urlService) {
         return ({
@@ -10,7 +11,9 @@ angular.module('capx').factory(
             getLegsByVV: getLegsByVV,
             getComparisonByLeg: getComparisonByLeg,
             getUboat: getUboat,
-            getHistoryByLeg: getHistoryByLeg
+            getHistoryByLeg: getHistoryByLeg,
+            getPreferredServices: getPreferredServices,
+            getServiceDetails:getServiceDetails 
         });
 
         /**
@@ -128,8 +131,25 @@ angular.module('capx').factory(
             var request = $http({
                 method: 'get',
                 url: getBaseUrl() +serviceId + "/" + week + "/" + vvId + "/" + legId +"/history"
-                // url: "http://127.0.0.1:5000/v1.0/84kn/1/25B1612/1/history"
             });
             return (request.then(helperService.handleHTTPSuccess, helperService.handleHTTPError));
+        }
+
+
+        function getPreferredServices(){
+            var request = $http({
+                method: 'get',
+                url: getBaseUrl() + "selectedservices"
+            });
+            return (request.then(helperService.handleHTTPSuccess, helperService.handleHTTPError));
+        }
+
+        function getServiceDetails(serviceId){
+            var request = $http({
+                method: 'get',
+                url: getBaseUrl() + serviceId + "/details"
+            });
+            return (request.then(helperService.handleHTTPSuccess, helperService.handleHTTPError));
+
         }
     }]);

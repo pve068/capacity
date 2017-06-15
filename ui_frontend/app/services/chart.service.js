@@ -1,3 +1,5 @@
+"use strict";
+
 angular.module('capx').factory(
     'chartMetaService', [function () {
         return ({
@@ -5,7 +7,7 @@ angular.module('capx').factory(
             getOptions: getGenericOptions,
         });
 
-
+        
         function getGenericOptions(unit) {
             return {
                 legend: {

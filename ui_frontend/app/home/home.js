@@ -10,67 +10,36 @@ angular.module('capx')
 function homeController(legService, prefService) {
     var vm = this;
 
-    vm.selectedService = null;
-    vm.selectedServiceChanged = false;
-    vm.selectedWeek = -1;
-    vm.selectedWeekChanged = false;
-    vm.selectedLeg = null;
-    vm.selectedLegChanged = false;
+    vm.$onInit = function() {
+        vm.dataAvailable = [];
+        legService.getPreferredServices().then(function(dataset) {
+            vm.preferredServices = dataset;
+            vm.serviceDetails = {};
+            vm.idpairs = getPairs(vm.preferredServices);
+            // for (var i = 0; i < dataset.length-1; i++) {
 
-    vm.services = [];
-    vm.weeks = [];
-    vm.legs = []
+            vm.preferredServices.forEach(function(element) {
+                legService.getServiceDetails(element.id).then(function(ui_data) {
+                    vm.serviceDetails[element.id] = ui_data;
+                    vm.dataAvailable.push(element.id);
+                });
 
-    vm.disableRender = vm.disableWeeksList = vm.disableLegsList = true;
-
-    vm.$onInit = function () {
-        legService.listServices().then(function (services) {
-            vm.services = services;
+            }, this);
+            //var id = dataset[]
         });
-    }
+    };
 
-    vm.fetchWeeks = function () {
-        vm.disableRender = vm.disableWeeksList = !(vm.selectedService != null && vm.selectedService.id > 0); /// TODO: depending on the id we'll need to change this condition
-        vm.weeks = legService.listWeeks();
-        //vm.selectedServiceChanged = true;
-        vm.disableLegsList = vm.selectedServiceChanged;
-    }
-
-    vm.fetchLegs = function () {
-        vm.disableLegsList = !(vm.selectedWeek && vm.selectedWeek > -1);
-        legService.getLegsByWeek(vm.selectedService, vm.selectedWeek).then(function (legs) {
-            vm.legs = legs;
-            for (var i = 0; i < legs.length; i++) vm.legs[i].id = i;
-            vm.selectedSerivceChanged = false;
-        });
-        //vm.selectedWeekChanged = true;
-    }
-
-    vm.loadState = function () {
-        if (vm.selectedService !== null && vm.selectedWeek === -1 && vm.selectedLeg === null) {
-            legService.getLegsByService(vm.selectedService).then(function (data) {
-                $state.go('capacity.byservice', {
-                    data: data
-                });
-            });
-        } else if (vm.selectedService !== null && vm.selectedWeek !== -1 && vm.selectedLeg === null) {
-            if (vm.legs.length > 0) {
-                $state.go('capacity.byweek', {
-                    data: vm.legs
-                });
-            } else {
-                legService.getLegsByWeek(vm.selectedService.id, vm.selectedWeek).then(function (data) {
-                    $state.go('capacity.byweek', {
-                        data: data
-                    });
-                });
-            }
-        } else {
-            legService.getAllByLeg(vm.selectedService.id, vm.selectedWeek, vm.selectedLeg).then(function (data) {
-                $state.go('capacity.byleg', {
-                    data: data
-                });
-            });
+    function getPairs(dataset) {
+        var res = [];
+        if (dataset === undefined || dataset.length === 0) {
+            return res;
         }
+        for (var i = 0; i < dataset.length - 1; i += 2) {
+            res.push([dataset[i].id, dataset[i + 1].id]);
+        }
+        if ((dataset.length % 2) == 1) {
+            res.push([dataset[dataset.length - 1]])
+        }
+        return res;
     }
 }

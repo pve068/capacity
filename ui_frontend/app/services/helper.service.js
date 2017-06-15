@@ -1,3 +1,5 @@
+"use strict";
+
 angular.module('capx').factory(
     'helperService',
     ['$http', '$q', '$log', function ($http, $q, $log) {

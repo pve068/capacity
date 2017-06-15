@@ -4,6 +4,7 @@
 angular.module('capx', ['ui.router', 'chart.js', 'mm.foundation']);
 
 angular.module('capx')
+    
     .config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
         function ($stateProvider, $urlRouterProvider, $httpProvider) {
             $stateProvider.state('settings', {
@@ -60,13 +61,17 @@ angular.module('capx')
                 component: 'byuboat'
             });
 
-/*
             $stateProvider.state('home', {
                 url: '/home',
                 component: 'home'
             });
 
             $urlRouterProvider.otherwise('home');
-            */
+            
         }
-    ]);
+    ])
+    .run(["$rootScope", function($rootScope){
+        /* setting the configuration object from the configuration file
+        */
+        $rootScope.config = appConfig || {};
+    }]);

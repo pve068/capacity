@@ -1,0 +1,153 @@
+#tubemap line {
+    cursor: pointer;
+}
+
+#tubemap .null {
+    visibility: hidden;
+}
+
+#tubemap .under {
+    stroke: rgba(252, 185, 28, 0.6);
+}
+
+#tubemap .over {
+    stroke: rgba(181, 0, 48, 0.6);
+}
+
+#tubemap .normal {
+    stroke: rgba(66, 155, 69, 0.6);
+}
+
+#tubemap .past {
+    stroke: rgba(153, 153, 153, 0.6);
+}
+
+#tubemap .future {
+    stroke: rgba(153, 153, 153, 0.6);
+    fill: white;
+    stroke-dasharray: 8px;
+    stroke-dashoffset: 2px;
+}
+
+#tubemap .under:hover {
+    stroke: rgba(252, 185, 28, 1.0);
+}
+
+#tubemap .over:hover {
+    stroke: rgba(181, 0, 48, 1.0);
+}
+
+#tubemap .normal:hover {
+    stroke: rgba(66, 155, 69, 1.0);
+}
+
+#tubemap .past:hover {
+    stroke: rgba(153, 153, 153, 1.0);
+}
+
+#tubemap .future:hover {
+    stroke: rgba(153, 153, 153, 1.0);
+}
+
+#tubemap .rollout {
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+}
+
+#tubemap-title {
+    padding-top: 3rem;
+    font-weight: 800px;
+    font-size: 1.8rem;
+}
+
+#tubemap-chart {
+    overflow-x: auto;
+}
+
+
+/*Tubemap Scrollbar*/
+
+#tubemap-chart::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    background-color: #F5F5F5;
+}
+
+#tubemap-chart::-webkit-scrollbar {
+    width: 12px;
+    background-color: #F5F5F5;
+}
+
+#tubemap-chart::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: #bbb;
+}
+
+
+
+/* Legend */
+
+#tubemap-legend .blocks {
+    display: inline-block;
+}
+
+#tubemap-legend .colored-checkbox:not(:checked),
+.colored-checkbox:checked {
+    display: none;
+    /*position: absolute;
+    left: -9999px;*/
+}
+
+#tubemap-legend .colored-checkbox:not(:checked)+.tubelabel,
+.colored-checkbox:checked+.tubelabel {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    padding-left: 3rem;
+}
+
+#tubemap-legend .colored-checkbox:not(:checked)+.tubelabel:before,
+.colored-checkbox:checked+.tubelabel:before {
+    content: '';
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 40px;
+    height: 15px;
+}
+
+#tubemap-legend .colored-checkbox-under+.tubelabel:before {
+    background-color: rgba(252, 185, 28, 0.6);
+    border: 1px solid rgba(252, 185, 28, 1.0);
+}
+
+#tubemap-legend .colored-checkbox-over+.tubelabel:before {
+    background-color: rgba(181, 0, 48, 0.6);
+    border: 1px solid rgba(181, 0, 48, 1.0);
+}
+
+#tubemap-legend .colored-checkbox-normal+.tubelabel:before {
+    background-color: rgba(66, 155, 69, 0.6);
+    border: 1px solid rgba(66, 155, 69, 1.0);
+}
+
+#tubemap-legend .colored-checkbox-past+.tubelabel:before {
+    background-color: rgba(153, 153, 153, 0.6);
+    border: 1px solid rgba(153, 153, 153, 1.0);
+}
+
+#tubemap-legend .colored-checkbox-future+.tubelabel:before {
+    background-image: url("data:image/svg+xml;utf8,<svg width='40' height='15' xmlns='http://www.w3.org/2000/svg'><g>  <rect fill='#fff' id='canvas_background' height='17' width='42' y='-1' x='-1'/>  <g display='none' overflow='visible' y='0' x='0' height='100%' width='100%' id='canvasGrid'>   <rect fill='url(#gridpattern)' stroke-width='0' y='0' x='0' height='100%' width='100%'/>  </g> </g> <g>  <line stroke='#666666' stroke-dasharray='5,5' stroke-linecap='undefined' stroke-linejoin='undefined' id='svg_1' y2='7' x2='39.96922' y1='7' x1='0.03078' stroke-width='1.5' fill='none'/> </g></svg>");
+    border: 1px solid rgba(153, 153, 153, 1.0);
+}
+
+#tubemap-legend .colored-checkbox:not(:checked)+.tubelabel {
+    text-decoration: line-through;
+}
+
+#tubemap-legend .colored-checkbox:checked+.tubelabel {
+    text-decoration: none;
+}

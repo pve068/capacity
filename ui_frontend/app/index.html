@@ -19,7 +19,10 @@
   <link href="topbar.css" rel="stylesheet">
   <link href="custom.css" rel="stylesheet">
   <link href="uboat.css" rel="stylesheet">
+  <link href="tubemap.css" rel="stylesheet">
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+  <!-- This is the configuration file: please do NOT forget to load it -->
+  <script src="app.config.js"></script>
 </head>
 
 <body>
@@ -81,13 +84,18 @@
   <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.4-rc2/foundation.js"></script>-->
 
   <script src="bower_components/chart.js/dist/Chart.js"></script>
+  <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>-->
   <script src="bower_components/angular-chart.js/dist/angular-chart.js"></script>
+  <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-charts/0.2.7/angular-charts.min.js"></script>-->
   <script src="bower_components/angular-foundation/mm-foundation-tpls.js"></script>
 
-  <script src="app.js"></script>
-  <script src="capacity/capacity.js"></script>
-  <script src="byservice/byservice.js"></script>
 
+  <!-- The app libraries start from here -->
+  <script src="app.js"></script>
+  <script src="home/home.js"></script>
+  <script src="capacity/capacity.js"></script>
+
+  <script src="byservice/byservice.js"></script>
   <script src="byleg/byleg.js"></script>
   <script src="byweek/byweek.js"></script>
 
@@ -96,6 +104,8 @@
 
   <script src="customuboat/customuboat.js"></script>
   <script src="byuboat/byuboat.js"></script>
+
+  <script src="customtubemap/customtubemap.js"></script>
 
   <script src="services/url.service.js"></script>
   <script src="services/helper.service.js"></script>

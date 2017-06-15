@@ -1,10 +1,10 @@
+"use strict";
 angular.module('capx').factory(
     'prefService', ['$http', '$q', '$log', 'urlService',
         function ($http, $q, $log, urlService) {
             return ({
                 getServices: getServiceList,
                 addService: addService,
-                getUnit: getUnit
             });
 
             /**

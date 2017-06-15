@@ -1,0 +1,50 @@
+<div id="tubemap">
+    <div class="row">
+        <div class="small-12 columns">
+            <div id="tubemap-title" class="text-center">
+                {{vm.serviceid.toUpperCase()}}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!--<div id="tubemap-legend" class="small-8 small-offset-4 medium-11 medium-offset-1 large-11 large-offset-1 columns">-->
+        <div id="tubemap-legend" class="text-center">
+            <div ng-repeat="category in vm.categories" class="blocks">
+                <input type="checkbox" ng-model="vm.selections[category]" ng-true-value="'visible'" ng-false-value="'hidden'" ng:attr:id="x-{{vm.serviceid}}-{{category}}" ng:attr:class="colored-checkbox colored-checkbox-{{category}}" />
+                <label class="tubelabel" for="x-{{vm.serviceid}}-{{category}}">{{category}}</label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="small-3 medium-2 large-2 column" id="tubemap-x-labels">
+            <div>
+                <svg width="100%" ng:attr:height="{{vm.canvasHeight}}">
+                    <text text-anchor="end" ng:attr:x="100%" ng:attr:y="{{vm.yOffset+ 3 + (j*vm.ySpacing)}}" fill="black" ng:attr:font-size="{{vm.fontSize}}" ng-repeat="(j,vv) in vm.vvs track by $index">
+                        {{vv.name.toUpperCase()}}
+                    </text>
+                </svg>
+            </div>
+        </div>
+        <div class="small-9 medium-10 large-10 column" id="tubemap-chart">
+            <div>
+                <svg ng:attr:height="{{vm.canvasHeight}}" ng:attr:width="{{vm.canvasWidth}}">
+                    <svg ng-repeat="(j,vv) in vm.vvs track by $index">
+                        <g>
+                            <line x1="0" ng:attr:y1="{{vm.yOffset + j*vm.ySpacing}}" ng:attr:x2="{{vm.canvasWidth}}" ng:attr:y2="{{vm.yOffset + j*vm.ySpacing}}" stroke="{{vm.gridStrokeColor}}" stroke-width="{{vm.gridStrokeWidth}}" ng:attr:visibility="{{vm.gridVisibility}}"></line>
+                        </g>
+                    </svg>
+                    <text text-anchor="middle" ng:attr:x="{{vm.xOffset + (i*vm.xSpacing)}}" ng:attr:y="{{vm.yOffset - 30}}" fill="black" ng:attr:font-size="{{vm.fontSize}}" ng-repeat="(i,port) in vm.ports">{{port.toUpperCase()}}</text>
+
+                    <svg ng-repeat="(j,vv) in vm.vvs track by $index">
+                        <g ng-repeat="(i,s) in vv.skip track by $index">
+                            <circle ng-if="s === 1" ng:attr:cx="{{vm.xOffset + (i*vm.xSpacing)}}" ng:attr:cy="{{vm.yOffset + (j*vm.ySpacing)}}" ng:attr:r="{{vm.markerRadius}}" stroke="{{vm.markerStrokeColor}}" ng:attr:stroke-width="{{vm.markerStrokeWidth}}" ng:attr:fill="{{vm.markerFillColor}}" />
+                        </g>
+                        <g ng-repeat="(k,s) in vv.indices">
+                            <line ng:attr:x1="{{vm.xOffset + (s*vm.xSpacing) +vm.markerRadius+vm.markerStrokeWidth}}" ng:attr:y1="{{vm.yOffset + (j*vm.ySpacing)}}" ng:attr:x2="{{vm.xOffset + (s*vm.xSpacing)+ (vv.spacings[k] * vm.xSpacing) -vm.markerRadius-vm.markerStrokeWidth}}" ng:attr:y2="{{vm.yOffset + (j*vm.ySpacing)}}" ng:attr:class="{{vv.val[k]}}" ng:attr:visibility="{{ vm.selections[vv.val[k]] }}" ng:attr:stroke-width="{{vm.tubeStrokeWidth}}"></line>
+                        </g>
+                    </svg>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>

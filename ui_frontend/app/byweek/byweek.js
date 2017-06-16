@@ -57,7 +57,7 @@ function ByWeekController($filter, $state, $stateParams, chartMetaService) {
 
     function initData(sortedList, unit) {
         var labels = [];
-        var dataDefinition = ["msk", "overbooking","total_consumption"];
+        var dataDefinition = ["msk", "overbooking","freesale","commitment","empties"];
         var dataOrder = generateDataOrder(sortedList[0].dd, dataDefinition);
         var datasets = [];
         var datasetOverride = [];
@@ -68,7 +68,7 @@ function ByWeekController($filter, $state, $stateParams, chartMetaService) {
                     "stack": "capacity",
                     "type": "bar"
                 });
-            } else if (dataDefinition[i] === "total_consumption") {
+            } else if (dataDefinition[i] === "freesale" || dataDefinition[i] === "commitment" || dataDefinition[i] === "empties") {
                 datasetOverride.push({
                     "label": dataDefinition[i],
                     "stack": "consumption",

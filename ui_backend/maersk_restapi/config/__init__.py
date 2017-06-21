@@ -1,15 +1,14 @@
-import configparser
+import os
 
 class ApiConfig:
 
    @staticmethod
    def alchemy_connection():
-       app_config = configparser.ConfigParser()
-       app_config.read('config\config.ini')
-       sqlserver = 'mssql-ra'
-       server = app_config.get(sqlserver, 'server')
-       database = app_config.get(sqlserver, 'database')
-       driver = app_config.get(sqlserver, 'driver')
-       conn_string = "mssql+pyodbc://"+server+"/"+database+"?driver="+driver
+       server = os.environ.get('CAPACITY_DBMS_SERVER')
+       database = os.environ.get('CAPACITY_DBMS_DATABASE')
+       driver = os.environ.get('CAPACITY_DBMS_DRIVER')
+       user = os.environ.get('CAPACITY_DBMS_USER')
+       pwd = os.environ.get('CAPACITY_DBMS_PASSWORD')
+       conn_string = "mssql+pyodbc://"+user+':'+pwd+'@'+server+"/"+database+"?driver="+driver
        return conn_string
 

@@ -84,11 +84,8 @@ BEGIN
 	--ASSIGN TODAYS DATE IF RUNDATE IS NULL
 	SET @V_RUNDATE = CAST(COALESCE(@V_RUNDATE, GETUTCDATE()) AS DATE)
 	SET @V_PARENT_PROCESS_ID = COALESCE(@V_PARENT_PROCESS_ID,0)
-
-
-
 	--GET AUDIT VERSION ID
-	EXEC @V_AUDITVERSIONID = ANALYTICSDATAMART.DBO.USP_GETAUDITVERSIONID @V_RUNDATE, @V_AUDITVERSIONID OUTPUT
+	--EXEC @V_AUDITVERSIONID = ANALYTICSDATAMART.DBO.USP_GETAUDITVERSIONID @V_RUNDATE, @V_AUDITVERSIONID OUTPUT
 
 	BEGIN TRY
 		--LOG PROCESS		
@@ -123,7 +120,6 @@ BEGIN
 			  ,L.[SHIPMENT_VRSN_ID_X]
 			  ,L.[BRAND]
 			  ,L.[CONTAINER_SIZE_X]
-			  --,L.[CONTAINER_TYPE_X]
 			  ,L.[LOPFI]
 			  ,L.[DIPLA]
 			  ,L.[POD]
@@ -133,8 +129,6 @@ BEGIN
 			  ,L.[STRING_ID_X]
 			  ,L.[ROUTE_CD]
 			  ,L.[SHIPMENT_STATUS]
-			  --,L.[IS_LIVE_REEFER]
-			  --,L.[NAC_CUSTOMER]
 			  ,R.VESSELCODE
 			  ,R.SERVICECODE
 			  ,R.FROMSITECODE
@@ -142,31 +136,28 @@ BEGIN
 			  ,R.LOCSEQX
 			  ,R.DEPVOYAGEX
 			  ,R.ARRVOYAGEX
-			  ,R.DEPLOCALEXPECTEDDT AS ETD
+			  ,L.ETD AS ETD
 			  , CARGO_TYPE
 			  ,SUM(L.[FFE]) AS FFE
-			  ,AVG([GROSSWEIGHT]) AS [GROSSWEIGHTKG]
+			  ,AVG([GROSSWEIGHT]) AS GROSSWEIGHT
 		INTO 
 			DBO.TMPCONSUMPTIONSTEP1
 		FROM 	
-			ANALYTICSDATAMART.[DBO].[BOOKING_FINAL] L 
-				INNER JOIN ANALYTICSDATAMART.DBO.ROUTELINKS R 
+			ANALYTICSDATAMART.[DBO].[BOOKING_FINAL] L (NOLOCK) 
+				INNER JOIN ANALYTICSDATAMART.DBO.ROUTELINKS_CLEAN R (nolock)
 		ON 
 			L.SHIPMENT_NO_X = R.SHIPMENT_NO_X
 			AND L.SHIPMENT_VRSN_ID_X = R.SHIPMENT_VRSN_ID_X
-		WHERE 
+		WHERE 	
 			UPPER(L.IS_VSA_F) IN (@V_IS_VSA_F_FLAG)
 			AND UPPER(L.SHIPMENT_STATUS) IN (@V_SHIPMENT_STATUS_FLAG)
-			AND R.DEPLOCALEXPECTEDDT BETWEEN DATEADD(DAY, -@V_LOOKBACK_DAYS, @V_RUNDATE) AND DATEADD(DAY, @V_LOOKFORWARD_DAYS,@V_RUNDATE)
-			--AND R.SERVICECODE = '84K'
+			AND L.ETD BETWEEN DATEADD(DAY, -@V_LOOKBACK_DAYS, @V_RUNDATE) AND DATEADD(DAY, @V_LOOKFORWARD_DAYS,@V_RUNDATE)
 			AND (case when @V_SERVICE is null or upper(@V_SERVICE) = 'ALL' then '1' else R.SERVICECODE end
 						= case when @V_SERVICE is null or upper(@V_SERVICE) = 'ALL' then '1' else @V_SERVICE  end)
 		GROUP BY 	  L.[SHIPMENT_NO_X]
 			  ,L.[SHIPMENT_VRSN_ID_X]
 			  ,L.[BRAND]
 			  ,L.[CONTAINER_SIZE_X]
-			  --,L.[CONTAINER_TYPE_X]
-
 			  ,L.[LOPFI]
 			  ,L.[DIPLA]
 			  ,L.[POD]
@@ -176,8 +167,6 @@ BEGIN
 			  ,L.[STRING_ID_X]
 			  ,L.[ROUTE_CD]
 			  ,L.[SHIPMENT_STATUS]
-			  --,L.[IS_LIVE_REEFER]
-			  --,L.[NAC_CUSTOMER]
 			  ,R.VESSELCODE
 			  ,R.SERVICECODE
 			  ,R.FROMSITECODE
@@ -185,14 +174,16 @@ BEGIN
 			  ,R.LOCSEQX
 			  ,R.DEPVOYAGEX
 			  ,R.ARRVOYAGEX
-			  , DEPLOCALEXPECTEDDT
+			  , L.ETD
 			  , CARGO_TYPE
+		OPTION (MAXDOP 8)
+
 
 		SET @V_RECORD_CNT = @@ROWCOUNT
 		SET @V_SYSTEMTIME = GETUTCDATE()
 			
 		--UPDATE DETAIL 
-		SET @V_NOTE = @V_NOTE +' COMPLETELY SUCCESSFULLY'
+		SET @V_NOTE = @V_STEP_NAME +' COMPLETELY SUCCESSFULLY'
 		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
   					, @V_STEP_ID = @V_STEP_ID
   					, @V_STEP_NAME = @V_STEP_NAME
@@ -220,15 +211,18 @@ BEGIN
 
 
 
-		SELECT A.VESSELCODE,A.DEPVOYAGEX AS DEPVOYAGE, A.SERVICECODE, A.FROMSITECODE,MIN(B.SCHEDULEID)  AS FIRSTSCHEDULEID
+		SELECT distinct A.VESSELCODE
+				,A.DEPVOYAGEX AS DEPVOYAGE
+				,A.ARRVOYAGEX as ARRVOYAGE
+				, A.SERVICECODE, A.FROMSITECODE
+				,MIN(B.SCHEDULEID) over (partition by A.VESSELCODE,A.DEPVOYAGEX, A.SERVICECODE, A.FROMSITECODE) AS FIRSTSCHEDULEID
 		INTO #TMP_MIN_SEQ
 		FROM DBO.TMPCONSUMPTIONSTEP1 A
 		INNER JOIN ANALYTICSDATAMART.DBO.ROUTELEGS_SCHEDULE B
 		ON A.VESSELCODE = B.VESSELCODE
-		--AND A.DEPVOYAGEX = B.VOYAGE --Removed becasue you want to we want leg across voyages
+		AND A.DEPVOYAGEX = B.VOYAGE
 		AND A.SERVICECODE = B.SERVICECODE
 		AND A.FROMSITECODE = B.DEPARTUREPORT
-		GROUP BY A.VESSELCODE,A.DEPVOYAGEX, A.SERVICECODE, A.FROMSITECODE
 
 		SELECT	gg.VESSELCODE
 				,gg.DEPVOYAGE
@@ -236,18 +230,18 @@ BEGIN
 				,gg.FROMSITECODE
 				,A.TOSITECODE
 				,gg.FIRSTSCHEDULEID
-				,MIN(B.SCHEDULEID)  AS LASTSCHEDULEID
+				,MIN(B.SCHEDULEID) AS LASTSCHEDULEID
 		INTO #TMP_ROUTE_SEQ
 		FROM DBO.TMPCONSUMPTIONSTEP1 A
 		INNER JOIN #TMP_MIN_SEQ GG
 		ON A.VESSELCODE = GG.VESSELCODE
 		AND A.SERVICECODE = GG.SERVICECODE
-		--AND A.DEPVOYAGEX = GG.DEPVOYAGE--Removed becasue you want to we want leg across voyages
+		AND (A.DEPVOYAGEX = GG.DEPVOYAGE)
 		AND A.FROMSITECODE = GG.FROMSITECODE
 		INNER JOIN ANALYTICSDATAMART.DBO.ROUTELEGS_SCHEDULE B
 		ON A.VESSELCODE = B.VESSELCODE
 		AND A.SERVICECODE = B.SERVICECODE
-		AND A.TOSITECODE = B.ARRIVALPORT
+		AND left(A.TOSITECODE,5) = left(B.ARRIVALPORT,5)
 		AND B.SCHEDULEID >= GG.FIRSTSCHEDULEID
 		GROUP BY gg.VESSELCODE
 				,gg.DEPVOYAGE
@@ -264,9 +258,8 @@ BEGIN
 				  ,L.[BRAND]
 				  ,L.[CONTAINER_SIZE_X]
 				  ,L.[FFE]
-				  --,L.[CONTAINER_TYPE_X]
 				  ,L.CARGO_TYPE
-				  ,L.[GROSSWEIGHTKG]
+				  ,L.GROSSWEIGHT
 				  ,L.[LOPFI]
 				  ,L.[DIPLA]
 				  ,L.[POD]
@@ -276,8 +269,6 @@ BEGIN
 				  ,L.[STRING_ID_X]
 				  ,L.[ROUTE_CD]
 				  ,L.[SHIPMENT_STATUS]
-				  --,L.[IS_LIVE_REEFER]
-				  --,L.[NAC_CUSTOMER]
 				  ,L.VESSELCODE
 				  ,L.SERVICECODE
 				  ,L.FROMSITECODE
@@ -335,9 +326,8 @@ BEGIN
 				,L.[BRAND]
 				,L.[CONTAINER_SIZE_X]
 				,L.[FFE]
-				--,L.[CONTAINER_TYPE_X]
 				,L.CARGO_TYPE
-				,L.[GROSSWEIGHTKG]
+				,L.GROSSWEIGHT
 				,L.[LOPFI]
 				,L.[DIPLA]
 				,L.[POD]
@@ -347,14 +337,13 @@ BEGIN
 				,L.[STRING_ID_X]
 				,L.[ROUTE_CD]
 				,L.[SHIPMENT_STATUS]
-				--,L.[IS_LIVE_REEFER]
-				--,L.[NAC_CUSTOMER]
 				,L.VESSELCODE
 				,L.SERVICECODE
 				,L.FROMSITECODE
 				,L.TOSITECODE
 				,L.LOCSEQX
 				,R.VOYAGE AS VOYAGE
+				,R.ARRVOYAGE
 				,L.ETD
 				,R.SCHEDULEID
 				,R.DEPARTUREPORT
@@ -364,6 +353,7 @@ BEGIN
 				,R.[ORIGINAL_ETD]
 				,R.[ACTUAL_ETD]
 				,R.serviceCodeDirection
+				,R.NEXTDEPVOYAGE
 		INTO DBO.TMPCONSUMPTIONSTEP2
 		FROM DBO.TMPCONSUMPTION_LEGS L 
 		INNER JOIN ANALYTICSDATAMART.DBO.ROUTELEGS_SCHEDULE R 
@@ -386,78 +376,6 @@ BEGIN
   					, @V_ACTION = 2
   					, @V_NOTE = @V_NOTE;
 
-		---------------------------------------------------------
-		-- IN THIS STEP WE TAKE THE SITECODES BROUGHT IN FROM SCHEDULES DATA 
-		-- TO CREATE THE FROM AND TO SITECODE 
-		--ADDITIONALLY WE POPULATE THE ARRIVAL AND DEP DATES AND ADD CALCULATED FIELDS
-		---------------------------------------------------------
-		SET @V_STEP_ID = 30
-		SET @V_STEP_NAME = 'CALCULTE NUMBER OF CONTAINERS, FFE AND PLUGS'
-		SET @V_NOTE = 'AT THE LEG LEVEL CALCULATE THE TEU, FFE, PLUGS AND NUMBER OF CONTAINER'
-		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
-  					, @V_STEP_ID = @V_STEP_ID
-  					, @V_STEP_NAME = @V_STEP_NAME
-  					, @V_START_DT = @V_SYSTEMTIME
-  					, @V_END_DT = NULL
-  					, @V_STATUS = 'RUNNING'
-  					, @V_ROWS_PROCESSED = NULL
-  					, @V_ACTION = 1
-  					, @V_NOTE = @V_NOTE;
-
-		IF OBJECT_ID('DBO.TMPCONSUMPTIONSTEP3', 'U') IS NOT NULL
-		  DROP TABLE DBO.TMPCONSUMPTIONSTEP3;
-
-		SELECT   L.SHIPMENT_NO_X
-			,L.SHIPMENT_VRSN_ID_X
-			,L.BOOKING_DATE
-			,L.ROUTE_CD
-			,L.SERVICECODE
-			,L.STRING_ID_X
-			,L.VESSELCODE AS VESSEL
-			,L.VOYAGE
-			,L.LEGSEQID
-			,L.serviceCodeDirection
-			,L.CONTAINER_SIZE_X
-			--,L.CONTAINER_TYPE_X
-			,L.CARGO_TYPE
-			,L.LOPFI
-			,L.DIPLA
-			,L.FROMSITECODE
-			,L.TOSITECODE
-			,L.SCHEDULEID
-			,LTRIM(RTRIM(L.DEPARTUREPORT)) AS FROMLEGSITECODE
-			,L.ARRIVALPORT AS TOLEGSITECODE
-			,COALESCE(L.ORIGINAL_ETD,L.ETD) AS DEPARTUREDATE
-			,L.ETD
-			,L.ARRIVALDATE
-			,L.FFE * 2 AS TEU
-			,L.GROSSWEIGHTKG
-			,CASE WHEN UPPER(CARGO_TYPE) = 'REEF' AND L.CONTAINER_SIZE_X = 20 THEN @V_PLUGS_FOR_20
-				 WHEN UPPER(CARGO_TYPE) = 'REEF' AND L.CONTAINER_SIZE_X = 40 THEN @V_PLUGS_FOR_40
-				 ELSE 0
-			END AS PLUGS
-			,CASE WHEN L.CONTAINER_SIZE_X = 20 THEN FFE * @V_FFE_TO_TEU_MULTIPLIER
-				 WHEN L.CONTAINER_SIZE_X = 40 THEN FFE
-				 ELSE FFE
-			END AS CONTAINERCOUNT
-		INTO 
-			DBO.TMPCONSUMPTIONSTEP3 
-		FROM DBO.TMPCONSUMPTIONSTEP2 L;
-
-		SET @V_RECORD_CNT = @@ROWCOUNT
-		SET @V_SYSTEMTIME = GETUTCDATE()
-			
-		--UPDATE DETAIL 
-		SET @V_NOTE = @V_STEP_NAME + ' COMPLETED SUCCESSFULLY'
-		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
-  					, @V_STEP_ID = @V_STEP_ID
-  					, @V_STEP_NAME = @V_STEP_NAME
-  					, @V_START_DT = NULL
-  					, @V_END_DT = @V_SYSTEMTIME
-  					, @V_STATUS = 'COMPLETED'
-  					, @V_ROWS_PROCESSED = @V_RECORD_CNT
-  					, @V_ACTION = 2
-  					, @V_NOTE = @V_NOTE;
 		---------------------------------------------------------
 		--THIS FINAL STEP INCORPORATES THE FREESALE FLAG BASED ON COMMITMENT DATA
 		---------------------------------------------------------
@@ -485,44 +403,48 @@ BEGIN
 			,L.ROUTE_CD
 			,L.SERVICECODE
 			,L.STRING_ID_X
-			,L.VESSEL
+			,L.VESSELCODE AS VESSEL
 			,L.VOYAGE
+			,L.ARRvoyage
 			,L.LEGSEQID
+			,L.serviceCodeDirection
 			,L.CONTAINER_SIZE_X
-			--,L.CONTAINER_TYPE_X
 			,L.CARGO_TYPE
 			,L.LOPFI
 			,L.DIPLA
 			,L.FROMSITECODE
 			,L.TOSITECODE
 			,L.SCHEDULEID
-			,L.FROMLEGSITECODE
-			,L.TOLEGSITECODE
-			,L.DEPARTUREDATE
+			,LTRIM(RTRIM(L.DEPARTUREPORT)) AS FROMLEGSITECODE
+			,L.ARRIVALPORT AS TOLEGSITECODE
+			,COALESCE(L.ORIGINAL_ETD,L.ETD) AS DEPARTUREDATE
 			,L.ETD
 			,L.ARRIVALDATE
-			,L.TEU
-			,L.GROSSWEIGHTKG
-			,L.PLUGS
-			,L.CONTAINERCOUNT			
-			,L.serviceCodeDirection
-			, CAST(CASE WHEN R.Cargo_Type IS NOT NULL THEN 0 ELSE 1 END AS TINYINT) AS ISFREESALE
-			, FFEConsumed
-			, FFENotConsumed
+			,L.FFE * 2 AS TEU
+			,L.GROSSWEIGHT
+			,CASE WHEN UPPER(L.CARGO_TYPE) = 'REEF' AND L.CONTAINER_SIZE_X = 20 THEN 2
+				 WHEN UPPER(L.CARGO_TYPE) = 'REEF' AND L.CONTAINER_SIZE_X = 40 THEN 1
+				 ELSE 0
+			END AS PLUGS
+			,CASE WHEN L.CONTAINER_SIZE_X = 20 THEN FFE * 2
+				 WHEN L.CONTAINER_SIZE_X = 40 THEN FFE
+				 ELSE FFE
+			END AS CONTAINERCOUNT
+			,CAST(CASE WHEN R.COMMITMENTID IS NOT NULL THEN 0 ELSE 1 END AS TINYINT) AS ISFREESALE
+			,NEXTDEPVOYAGE
+			,dt.int_iso_yearweek
+			,dt.char_iso_yearweek
 		INTO 
 			DBO.CAPFCST_AD_CONSUMPTION 
-		FROM 
-			DBO.TMPCONSUMPTIONSTEP3 L 
-			LEFT OUTER JOIN 
-			(
-				select SHIPMENT_NO_X,CONTAINER_SIZE_X,Cargo_Type,SUM(FFEConsumed) as FFEConsumed,SUM(FFENotConsumed) as FFENotConsumed
-				from ANALYTICSDATAMART.DBO.BOOKINGCOMMITMENT (NOLOCK)
-				group by SHIPMENT_NO_X,CONTAINER_SIZE_X,Cargo_Type
-			) R 
+			FROM DBO.TMPCONSUMPTIONSTEP2 L (NOLOCK)
+			inner join analyticsdatamart.dbo.dim_date dt
+			on cast(COALESCE(L.ORIGINAL_ETD,L.ETD) as date) = cast(dt.date as date)
+		LEFT OUTER JOIN ANALYTICSDATAMART.DBO.BOOKINGCOMMITMENT R (NOLOCK)
 		ON 
 			L.SHIPMENT_NO_X = R.SHIPMENT_NO_X
+			AND L.cargo_type = R.cargo_type
 			AND L.CONTAINER_SIZE_X = R.CONTAINER_SIZE_X
-			AND L.CARGO_TYPE = R.CARGO_TYPE
+		OPTION (MAXDOP 8);
 
 		SET @V_RECORD_CNT = @@ROWCOUNT
 		SET @V_SYSTEMTIME = GETUTCDATE()
@@ -540,6 +462,491 @@ BEGIN
   					, @V_NOTE = @V_NOTE;
 
 		CREATE CLUSTERED INDEX CDX_CAPFCST_AD_CONSUMPTION ON DBO.CAPFCST_AD_CONSUMPTION(BOOKING_DATE,VESSEL,VOYAGE,SHIPMENT_NO_X,SHIPMENT_VRSN_ID_X, SERVICECODE,LEGSEQID,FROMLEGSITECODE,TOLEGSITECODE,DEPARTUREDATE,ARRIVALDATE)
+
+		SET @V_STEP_ID = 41
+		SET @V_STEP_NAME = 'BUILD HISTORICAL STRING TO ROUTE CODE MAP'
+		SET @V_NOTE = 'USING HISTORICAL BOOKING, TO BUILD MAPPING BETWEEN ROUTE_CD AND STRING_ID_X'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = @V_SYSTEMTIME
+  					, @V_END_DT = NULL
+  					, @V_STATUS = 'RUNNING'
+  					, @V_ROWS_PROCESSED = NULL
+  					, @V_ACTION = 1
+  					, @V_NOTE = @V_NOTE;
+
+			/******************************************************
+					Build Historical Distribution table
+			*******************************************************/
+			IF OBJECT_ID('DBO.TMP_ISC_LIST_AVG', 'U') IS NOT NULL
+				DROP TABLE DBO.TMP_ISC_LIST_AVG;
+
+			SELECT       L.VESSEL
+						,L.SERVICECODE
+						,L.SERVICECODEDIRECTION
+						,FROMLEGSITECODE
+						,TOLEGSITECODE
+						,DEPARTUREDATE
+						,L.int_iso_yearweek as weekno
+						,L.VOYAGE
+						,L.ARRvoyage
+						,L.LEGSEQID
+						,L.STRING_ID_X
+						,L.ROUTE_CD
+						,CAST(COALESCE(ld.ISC,'LEAD') as varchar(8)) as ISC
+						,sum(TEU) as TotalTEU
+			INTO DBO.TMP_ISC_LIST_AVG
+			FROM CAPINVRepository.[DBO].CAPFCST_AD_CONSUMPTION L 
+			left join ( 
+						select distinct servicecode,SERVICECODEDIRECTION,LEAD_ROUTE as ROUTE_CD,ISC
+						from ANALYTICSDATAMART.DBO.DIM_LEAD_ROUTE
+						union 
+						select distinct servicecode,SERVICECODEDIRECTION,CHILD_ROUTE, ISC
+						from ANALYTICSDATAMART.DBO.DIM_LEAD_ROUTE
+					  )ld
+			on L.ServiceCode = ld.servicecode
+			and L.serviceCodeDirection = ld.SERVICECODEDIRECTION
+			and L.ROUTE_CD = ld.ROUTE_CD
+			where L.ROUTE_CD is not null and L.ROUTE_CD <> ''
+			group by L.VESSEL
+						,L.SERVICECODE
+						,L.SERVICECODEDIRECTION
+						,FROMLEGSITECODE
+						,TOLEGSITECODE
+						,DEPARTUREDATE
+						,L.int_iso_yearweek
+						,L.VOYAGE
+						,L.ARRvoyage
+						,L.LEGSEQID
+						,L.STRING_ID_X
+						,L.ROUTE_CD
+						,CAST(COALESCE(ld.ISC,'LEAD') as varchar(8))
+			OPTION (MAXDOP 8);
+
+		SET @V_RECORD_CNT = @@ROWCOUNT
+		SET @V_SYSTEMTIME = GETUTCDATE()
+			
+		--UPDATE DETAIL 
+		SET @V_NOTE = @V_STEP_NAME + ' COMPLETED SUCCESSFULLY'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = NULL
+  					, @V_END_DT = @V_SYSTEMTIME
+  					, @V_STATUS = 'COMPLETED'
+  					, @V_ROWS_PROCESSED = @V_RECORD_CNT
+  					, @V_ACTION = 2
+  					, @V_NOTE = @V_NOTE;
+
+			create clustered index cdx_data_2 on DBO.TMP_ISC_LIST_AVG(SERVICECODE,ROUTE_CD,STRING_ID_X)
+
+			/******************************************************
+					Get one to one string to Route_cd
+			*******************************************************/
+			SET @V_STEP_ID = 42
+			SET @V_STEP_NAME = 'Get records with 1 to 1 map between string code and route code'
+			SET @V_NOTE = 'Get records with 1 to 1 map between string code and route code'
+			EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  						, @V_STEP_ID = @V_STEP_ID
+  						, @V_STEP_NAME = @V_STEP_NAME
+  						, @V_START_DT = @V_SYSTEMTIME
+  						, @V_END_DT = NULL
+  						, @V_STATUS = 'RUNNING'
+  						, @V_ROWS_PROCESSED = NULL
+  						, @V_ACTION = 1
+  						, @V_NOTE = @V_NOTE;
+
+			IF OBJECT_ID('DBO.TMP_ISC_LIST_SING', 'U') IS NOT NULL
+				DROP TABLE DBO.TMP_ISC_LIST_SING;
+
+			with dup1_1 as
+			(
+				select SERVICECODE,SERVICECODEDIRECTION,STRING_ID_X
+				from DBO.TMP_ISC_LIST_AVG
+				group by SERVICECODE,SERVICECODEDIRECTION,STRING_ID_X
+				having count(distinct route_cd) = 1
+			)
+			select L.VESSEL
+					,L.SERVICECODE
+					,L.SERVICECODEDIRECTION
+					,L.FROMLEGSITECODE
+					,L.TOLEGSITECODE
+					,L.DEPARTUREDATE
+					,L.weekno
+					,L.VOYAGE
+					,L.ARRvoyage
+					,L.LEGSEQID
+					,L.STRING_ID_X
+					,L.ROUTE_CD
+					,L.TotalTEU
+					,ISC
+					,cast('1 to 1' as varchar(75)) as iscReason
+					,cast(1.0 as numeric(10,4)) as TEU_DIST
+			INTO DBO.TMP_ISC_LIST_SING
+			from DBO.TMP_ISC_LIST_AVG L
+			inner join dup1_1 GG
+			on L.SERVICECODE = gg.ServiceCode
+			and L.SERVICECODEDIRECTION = gg.SERVICECODEDIRECTION
+			and L.STRING_ID_X = GG.STRING_ID_X;
+
+		SET @V_RECORD_CNT = @@ROWCOUNT
+		SET @V_SYSTEMTIME = GETUTCDATE()
+			
+		--UPDATE DETAIL 
+		SET @V_NOTE = @V_STEP_NAME + ' COMPLETED SUCCESSFULLY'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = NULL
+  					, @V_END_DT = @V_SYSTEMTIME
+  					, @V_STATUS = 'COMPLETED'
+  					, @V_ROWS_PROCESSED = @V_RECORD_CNT
+  					, @V_ACTION = 2
+  					, @V_NOTE = @V_NOTE;
+
+			/******************************************************
+					Match multiple route code to steering table
+					If no Matching Steered ISC, ISC is passive 
+					and allocated to lead Route
+			*******************************************************/
+			SET @V_STEP_ID = 43
+			SET @V_STEP_NAME = 'Get records with many to 1 map between string code and route code'
+			SET @V_NOTE = 'Get records with many to 1 map between string code and route code'
+			EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  						, @V_STEP_ID = @V_STEP_ID
+  						, @V_STEP_NAME = @V_STEP_NAME
+  						, @V_START_DT = @V_SYSTEMTIME
+  						, @V_END_DT = NULL
+  						, @V_STATUS = 'RUNNING'
+  						, @V_ROWS_PROCESSED = NULL
+  						, @V_ACTION = 1
+  						, @V_NOTE = @V_NOTE;
+
+			IF OBJECT_ID('DBO.TMP_ISC_LIST_FIX_MNT', 'U') IS NOT NULL
+				DROP TABLE DBO.TMP_ISC_LIST_FIX_MNT;
+
+			with t1 as
+			(
+				select SERVICECODE,SERVICECODEDIRECTION,STRING_ID_X, sum(TotalTEU) as TotalTEU
+				from DBO.TMP_ISC_LIST_AVG
+				group by SERVICECODE,SERVICECODEDIRECTION,STRING_ID_X
+				having count(distinct route_cd) > 1
+			)
+			select L.VESSEL
+					,L.SERVICECODE
+					,L.SERVICECODEDIRECTION
+					,L.FROMLEGSITECODE
+					,L.TOLEGSITECODE
+					,L.DEPARTUREDATE
+					,L.weekno
+					,L.VOYAGE
+					,L.ARRvoyage
+					,L.LEGSEQID
+					,L.STRING_ID_X
+					,L.ROUTE_CD
+					,L.TotalTEU
+					,GG.TotalTEU as DED_TotalTEU
+					,L.TotalTEU / GG.TotalTEU as TEU_DIST
+					,ISC
+					,cast('1 String Multiple Route' as varchar(75)) as iscReason
+			into DBO.TMP_ISC_LIST_FIX_MNT
+			from DBO.TMP_ISC_LIST_AVG L
+			inner join T1 GG
+			on L.SERVICECODE = gg.ServiceCode
+			and L.SERVICECODEDIRECTION = gg.SERVICECODEDIRECTION
+			and L.STRING_ID_X = GG.STRING_ID_X;
+
+		SET @V_RECORD_CNT = @@ROWCOUNT
+		SET @V_SYSTEMTIME = GETUTCDATE()
+			
+		--UPDATE DETAIL 
+		SET @V_NOTE = @V_STEP_NAME + ' COMPLETED SUCCESSFULLY'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = NULL
+  					, @V_END_DT = @V_SYSTEMTIME
+  					, @V_STATUS = 'COMPLETED'
+  					, @V_ROWS_PROCESSED = @V_RECORD_CNT
+  					, @V_ACTION = 2
+  					, @V_NOTE = @V_NOTE;
+
+			/******************************************************
+						Build finAL STRING TO rOUTE CODE
+			*******************************************************/
+			SET @V_STEP_ID = 44
+			SET @V_STEP_NAME = 'Combine String to route code -- 1 to 1'
+			SET @V_NOTE = 'Combine String to route code -- 1 to 1'
+			EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  						, @V_STEP_ID = @V_STEP_ID
+  						, @V_STEP_NAME = @V_STEP_NAME
+  						, @V_START_DT = @V_SYSTEMTIME
+  						, @V_END_DT = NULL
+  						, @V_STATUS = 'RUNNING'
+  						, @V_ROWS_PROCESSED = NULL
+  						, @V_ACTION = 1
+  						, @V_NOTE = @V_NOTE;
+
+			IF OBJECT_ID('DBO.TMP_ISC_LIST_ALL', 'U') IS NOT NULL
+				DROP TABLE DBO.TMP_ISC_LIST_ALL;
+
+			select distinct L.VESSEL
+					,L.SERVICECODE
+					,L.SERVICECODEDIRECTION
+					,L.FROMLEGSITECODE
+					,L.TOLEGSITECODE
+					,L.DEPARTUREDATE
+					,L.weekno
+					,L.VOYAGE
+					,L.ARRvoyage
+					,L.LEGSEQID
+					,L.STRING_ID_X
+					,L.ROUTE_CD
+					,L.TEU_DIST
+					,L.ISC
+					,L.iscReason
+			into DBO.TMP_ISC_LIST_ALL
+			from DBO.TMP_ISC_LIST_SING L;
+
+		SET @V_RECORD_CNT = @@ROWCOUNT
+		SET @V_SYSTEMTIME = GETUTCDATE()
+			
+		--UPDATE DETAIL 
+		SET @V_NOTE = @V_STEP_NAME + ' COMPLETED SUCCESSFULLY'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = NULL
+  					, @V_END_DT = @V_SYSTEMTIME
+  					, @V_STATUS = 'COMPLETED'
+  					, @V_ROWS_PROCESSED = @V_RECORD_CNT
+  					, @V_ACTION = 2
+  					, @V_NOTE = @V_NOTE;
+
+			SET @V_STEP_ID = 45
+			SET @V_STEP_NAME = 'Combine String to route code -- Many to 1'
+			SET @V_NOTE = 'Combine String to route code -- 1 to 1'
+			EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  						, @V_STEP_ID = @V_STEP_ID
+  						, @V_STEP_NAME = @V_STEP_NAME
+  						, @V_START_DT = @V_SYSTEMTIME
+  						, @V_END_DT = NULL
+  						, @V_STATUS = 'RUNNING'
+  						, @V_ROWS_PROCESSED = NULL
+  						, @V_ACTION = 1
+  						, @V_NOTE = @V_NOTE;
+
+			--Add multiple string code to route code
+			insert into DBO.TMP_ISC_LIST_ALL
+			(
+				 VESSEL
+				,SERVICECODE
+				,SERVICECODEDIRECTION
+				,FROMLEGSITECODE
+				,TOLEGSITECODE
+				,DEPARTUREDATE
+				,weekno
+				,VOYAGE
+				,ARRvoyage
+				,LEGSEQID
+				,STRING_ID_X
+				,ROUTE_CD
+				,TEU_DIST
+				,ISC
+				,iscReason
+			)
+			select distinct L.VESSEL
+					,L.SERVICECODE
+					,L.SERVICECODEDIRECTION
+					,L.FROMLEGSITECODE
+					,L.TOLEGSITECODE
+					,L.DEPARTUREDATE
+					,L.weekno
+					,L.VOYAGE
+					,L.ARRvoyage
+					,L.LEGSEQID
+					,L.STRING_ID_X
+					,L.ROUTE_CD
+					,L.TEU_DIST
+					,L.ISC
+					,L.iscReason
+			from DBO.TMP_ISC_LIST_FIX_MNT L
+			left join DBO.TMP_ISC_LIST_ALL GG
+			on L.ServiceCode = gg.ServiceCode
+			and L.SERVICECODEDIRECTION = gg.SERVICECODEDIRECTION
+			and L.STRING_ID_X = GG.STRING_ID_X
+			where GG.STRING_ID_X is null;
+
+		SET @V_RECORD_CNT = @@ROWCOUNT
+		SET @V_SYSTEMTIME = GETUTCDATE()
+			
+		--UPDATE DETAIL 
+		SET @V_NOTE = @V_STEP_NAME + ' COMPLETED SUCCESSFULLY'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = NULL
+  					, @V_END_DT = @V_SYSTEMTIME
+  					, @V_STATUS = 'COMPLETED'
+  					, @V_ROWS_PROCESSED = @V_RECORD_CNT
+  					, @V_ACTION = 2
+  					, @V_NOTE = @V_NOTE;
+
+		--UPDATE DETAIL 
+		SET @V_NOTE = @V_STEP_NAME + ' COMPLETED SUCCESSFULLY'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = NULL
+  					, @V_END_DT = @V_SYSTEMTIME
+  					, @V_STATUS = 'COMPLETED'
+  					, @V_ROWS_PROCESSED = @V_RECORD_CNT
+  					, @V_ACTION = 2
+  					, @V_NOTE = @V_NOTE;
+
+		SELECT  distinct A.SERVICECODE
+				,fromPort
+				,toport
+				,weekNo,VESSELCODE, VOYAGE
+				,b.arrvoyage
+				,MIN(B.SCHEDULEID) over (partition by A.SERVICECODE, fromPort,weekNo,VESSELCODE, VOYAGE) AS FIRSTSCHEDULEID
+		INTO #TMP_COMMITTED_MIN
+		from [dbo].tmp_ISC_Commited_TEU_MTS_plugs A
+		inner join AnalyticsDatamart.dbo.dim_date dt
+		on a.weekno = dt.int_iso_yearweek
+		INNER JOIN ANALYTICSDATAMART.DBO.ROUTELEGS_SCHEDULE B (NOLOCK)
+		ON A.SERVICECODE = B.SERVICECODE
+		AND left(A.fromport,5) = left(B.DEPARTUREPORT,5)
+		and cast(dt.date as date) = cast(B.ORIGINAL_ETD as date)
+
+		SELECT	gg.SERVICECODE, gg.fromPort
+				, gg.toPort
+				,gg.FIRSTSCHEDULEID
+				,gg.weekNo
+				,gg.VESSELCODE, gg.VOYAGE
+				,gg.ARRVOYAGE
+				,MIN(B.SCHEDULEID)  AS LASTSCHEDULEID
+		INTO #TMP_COMMITED_SEQ
+		from #TMP_COMMITTED_MIN GG
+		left join AnalyticsDatamart.dbo.dim_date dt
+		on gg.weekno = dt.int_iso_yearweek
+		INNER JOIN ANALYTICSDATAMART.DBO.ROUTELEGS_SCHEDULE B (NOLOCK)
+		ON gg.SERVICECODE = B.SERVICECODE
+		and gg.VESSELCODE = b.VESSELCODE
+		AND left(gg.toport,5) = left(B.ARRIVALPORT,5)
+		--and cast(dt.date as date) = cast(B.ORIGINAL_ETD as date)
+		AND B.SCHEDULEID >= GG.FIRSTSCHEDULEID
+		GROUP BY gg.SERVICECODE, gg.fromPort
+				, gg.toPort
+				,gg.FIRSTSCHEDULEID
+				,gg.weekNo
+				,gg.VESSELCODE, gg.VOYAGE
+				,gg.ARRVOYAGE;
+
+		/**********************************************************
+				Add Legs to the ISC Allocation data
+		***********************************************************/
+		IF OBJECT_ID('DBO.TMP_capinv_commited_legs', 'U') IS NOT NULL
+			DROP TABLE DBO.TMP_capinv_commited_legs;
+
+		with t1 as
+		(
+			select L.*,LL.FIRSTSCHEDULEID,LL.LASTSCHEDULEID, LL.VESSELCODE,LL.VOYAGE, LL.Arrvoyage
+			FROM dbo.tmp_ISC_Commited_TEU_MTS_plugs (NOLOCK)  L
+			INNER JOIN #TMP_COMMITED_SEQ LL
+			ON L.SERVICECODE = LL.SERVICECODE
+			AND L.FROMport = LL.FROMport
+			AND L.TOPort = LL.TOport
+			AND l.WeekNo = LL.WeekNo
+		)
+		select DISTINCT 
+				l.WeekNo	
+				,l.ServiceCode	
+				,l.SellingString	
+				,l.BuyingString	
+				,l.BuyingCompany	
+				,l.FromPort	
+				,l.ToPort	
+				,l.TEU	
+				,l.WeightKg
+				,l.REEFPLUGS
+				,R.VESSELCODE
+				,R.VOYAGE
+				,R.SCHEDULEID
+				,R.DEPARTUREPORT
+				,R.ARRIVALPORT
+				,R.ARRIVALDATE
+				,R.LEGSEQID
+				,R.[ORIGINAL_ETD] AS DEPARTUREDATE
+				,R.[ACTUAL_ETD]
+				,R.serviceCodeDirection
+		INTO DBO.TMP_capinv_commited_legs
+		from t1 L 
+		INNER JOIN 
+		(
+			select dd.*, dt.int_iso_yearweek as etd_date
+			from ANALYTICSDATAMART.DBO.ROUTELEGS_SCHEDULE dd
+			inner join analyticsdatamart.dbo.dim_date dt
+			on cast(dd.original_etd as date) = cast(dt.date as date)
+		) R 
+		ON ISNULL(LTRIM(RTRIM(L.SERVICECODE)),0) = ISNULL(LTRIM(RTRIM(R.SERVICECODE)),0)
+		and L.VESSELCODE = R.VESSELCODE
+		--and L.weekno = R.etd_date
+		AND R.SCHEDULEID BETWEEN L.FIRSTSCHEDULEID AND L.LASTSCHEDULEID;
+
+		/******************************************************
+				Apply Historical distribution to data
+		******************************************************/
+		SET @V_STEP_ID = 46
+		SET @V_STEP_NAME = 'BUILD LEGS FOR FBR ALLOCATION DATA'
+		SET @V_NOTE = 'BUILD LEGS FOR FBR ALLOCATION DATA'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = @V_SYSTEMTIME
+  					, @V_END_DT = NULL
+  					, @V_STATUS = 'RUNNING'
+  					, @V_ROWS_PROCESSED = NULL
+  					, @V_ACTION = 1
+  					, @V_NOTE = @V_NOTE;
+
+		IF OBJECT_ID('DBO.tmp_isc_allocated', 'U') IS NOT NULL
+			DROP TABLE DBO.tmp_isc_allocated;
+
+		select a.weekno,A.VESSELCODE AS VESSEL,A.VOYAGE,A.SERVICECODE,A.DEPARTUREPORT
+				,A.ARRIVALPORT
+				,A.LEGSEQID,A.DEPARTUREDATE, A.ARRIVALDATE
+				,A.SERVICECODEDIRECTION,b.ISC
+				, sum(a.teu * coalesce(b.TEU_DIST,1)) as CAL_TEU
+				,sum(a.WeightKg * coalesce(b.TEU_DIST,1)) as cal_WeightKG
+				,sum(a.WeightKg * coalesce(b.TEU_DIST,1))/1000.0 as cal_MTS
+				,sum(a.REEFPLUGS * coalesce(b.TEU_DIST,1)) as cal_REEFPLUGS
+		into dbo.tmp_isc_allocated
+		from DBO.TMP_capinv_commited_legs a
+		inner join DBO.TMP_ISC_LIST_ALL b
+		on a.VESSELCODE = b.VESSEL
+		and a.VOYAGE = b.VOYAGE
+		and a.SERVICECODE = b.SERVICECODE
+		and left(a.DEPARTUREPORT,5) = left(b.FROMLEGSITECODE,5)
+		and left(a.ARRIVALPORT,5) = left(b.TOLEGSITECODE,5)
+		and a.BuyingString = b.STRING_ID_X
+		group by a.weekno,A.VESSELCODE,A.VOYAGE,A.SERVICECODE,A.DEPARTUREPORT
+				,A.ARRIVALPORT
+				,A.LEGSEQID,A.DEPARTUREDATE, A.ARRIVALDATE
+				,A.SERVICECODEDIRECTION,b.ISC
+
+		--UPDATE DETAIL 
+		SET @V_NOTE = @V_STEP_NAME + ' COMPLETED SUCCESSFULLY'
+		EXEC DBO.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  					, @V_STEP_ID = @V_STEP_ID
+  					, @V_STEP_NAME = @V_STEP_NAME
+  					, @V_START_DT = NULL
+  					, @V_END_DT = @V_SYSTEMTIME
+  					, @V_STATUS = 'COMPLETED'
+  					, @V_ROWS_PROCESSED = @V_RECORD_CNT
+  					, @V_ACTION = 2
+  					, @V_NOTE = @V_NOTE;
 
 		--UPDATE PROCESS --COMPLETE PROCESS
 		SET @V_NOTE = @V_PROCESS_NAME + ' COMPLETED SUCCESSFULLY'

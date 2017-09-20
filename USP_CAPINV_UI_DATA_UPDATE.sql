@@ -104,7 +104,7 @@ BEGIN
 					   ,[ARRIVALPORT]
 					   ,[VESSELOPERATOR]
 					   ,[DEPARTUREDATE]
-					   ,[ARRIVALDATE]
+					   ,MAX([ARRIVALDATE]) as [ARRIVALDATE]
 					   ,SUM([INTAKETEU]) as [INTAKETEU]
 					   ,SUM([INTAKETONS]) as [INTAKETONS]
 					   ,SUM([INTAKEPLUGS]) as [INTAKEPLUGS]
@@ -158,7 +158,6 @@ BEGIN
 					   ,[ARRIVALPORT]
 					   ,[VESSELOPERATOR]
 					   ,[DEPARTUREDATE]
-					   ,[ARRIVALDATE]
 		),
 		sumdata as
 		(

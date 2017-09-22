@@ -83,7 +83,7 @@ BEGIN
 							, @V_START_STEP = 1;
 
 			
-			set @V_SYSTEMTIME = GETUTCDATE()
+			SET @V_SYSTEMTIME = GETUTCDATE()
 												
 			SET @V_STEP_ID = 10
 			IF @V_STEP_ID BETWEEN @V_STARTSTEP and @V_ENDSTEP 
@@ -125,7 +125,7 @@ BEGIN
 			SET @V_STEP_ID = 20
 			IF @V_STEP_ID BETWEEN @V_STARTSTEP and @V_ENDSTEP 
 			BEGIN
-				SET @V_STEP_NAME = 'Generate Capacity Forecast -- Run Stored Proc: USP_CAPFCST_CALC_FREESALECONSUMPTION'
+				SET @V_STEP_NAME = 'Generate Capacity Forecast -- Run Stored Proc: USP_CAPINV_CALC_REMAINING_CAPACITY'
 				EXEC dbo.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
   							, @V_STEP_ID = @V_STEP_ID
   							, @V_STEP_NAME = @V_STEP_NAME
@@ -143,7 +143,7 @@ BEGIN
 
 				IF 	@RETURN_VALUE = 0
 				BEGIN
-						--UPdate Detail 
+						--Update Detail 
 						SET @V_SYSTEMTIME = GETUTCDATE()
 						SET @V_STEP_NAME = @V_STEP_NAME + ' Completed successfully'
 						EXEC dbo.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID

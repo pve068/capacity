@@ -48,6 +48,7 @@ CREATE PROCEDURE [DBO].[USP_CAPFCST_RUN_FCST]
 	,@V_SERVICE VARCHAR(10)
 	,@V_STARTSTEP INT = 0
 	,@V_ENDSTEP INT = 100000
+	,@V_PUBLISHRUN INT = 1
 	,@V_PARENT_PROCESS_ID INT = 0
 	,@V_ERROR_CODE INT OUTPUT
 AS
@@ -82,13 +83,10 @@ BEGIN
 							, @V_NOTE = 'Process CapFcst'
 							, @V_START_STEP = 1;
 
-			
-			SET @V_SYSTEMTIME = GETUTCDATE()
-												
 			SET @V_STEP_ID = 10
 			IF @V_STEP_ID BETWEEN @V_STARTSTEP and @V_ENDSTEP 
 			BEGIN
-				SET @V_STEP_NAME = 'Build consumption table -- Run Stored Proc: USP_CAPFCST_AD_CONSUMPTION'
+				SET @V_STEP_NAME = 'Generate dataset for consumption'
 				EXEC dbo.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
   							, @V_STEP_ID = @V_STEP_ID
   							, @V_STEP_NAME = @V_STEP_NAME
@@ -97,9 +95,9 @@ BEGIN
   							, @V_STATUS = 'RUNNING'
   							, @V_ROWS_PROCESSED = NULL
   							, @V_ACTION = 1
-  							, @V_NOTE = 'Using booking final build consumption table at the leg level';
+  							, @V_NOTE = 'Generate consumption dataset';
 
-				EXEC	@RETURN_VALUE = [DBO].[USP_CAPFCST_AD_CONSUMPTION]
+				EXEC	@RETURN_VALUE = [DBO].USP_CAPFCST_AD_CONSUMPTION
 									@V_RUNDATE = @V_RUNDATE,
 									@V_SERVICE = @V_SERVICE,
 									@V_PARENT_PROCESS_ID = @V_PROCESS_ID,
@@ -107,7 +105,7 @@ BEGIN
 
 				IF 	@RETURN_VALUE = 0
 				BEGIN
-						--UPdate Detail 
+						--Update Detail 
 						SET @V_SYSTEMTIME = GETUTCDATE()
 						SET @V_STEP_NAME = @V_STEP_NAME + ' Completed successfully'
 						EXEC dbo.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
@@ -122,6 +120,7 @@ BEGIN
 				END
 			END
 
+							
 			SET @V_STEP_ID = 20
 			IF @V_STEP_ID BETWEEN @V_STARTSTEP and @V_ENDSTEP 
 			BEGIN
@@ -139,6 +138,7 @@ BEGIN
 				EXEC	@RETURN_VALUE = [DBO].USP_CAPINV_CALC_REMAINING_CAPACITY
 									@V_RUNDATE = @V_RUNDATE,
 									@V_PARENT_PROCESS_ID = @V_PROCESS_ID,
+									@V_PUBLISHRUN = @V_PUBLISHRUN,
 									@V_ERROR_CODE = @V_ERROR_CODE OUTPUT
 
 				IF 	@RETURN_VALUE = 0
@@ -172,9 +172,12 @@ BEGIN
   							, @V_ACTION = 1
   							, @V_NOTE = 'Generate Capacity Forecast final table for UI';
 
-				EXEC	@RETURN_VALUE = [DBO].USP_CAPINV_UI_DATA_UPDATE
-									@V_PARENT_PROCESS_ID = @V_PROCESS_ID,
-									@V_ERROR_CODE = @V_ERROR_CODE OUTPUT
+				IF @V_PUBLISHRUN = 1				
+				BEGIN
+					EXEC	@RETURN_VALUE = [DBO].USP_CAPINV_UI_DATA_UPDATE
+										@V_PARENT_PROCESS_ID = @V_PROCESS_ID,
+										@V_ERROR_CODE = @V_ERROR_CODE OUTPUT
+				END
 
 				IF 	@RETURN_VALUE = 0
 				BEGIN
@@ -193,6 +196,38 @@ BEGIN
 				END
 			END
 
+			SET @V_STEP_ID = 40
+			IF @V_STEP_ID BETWEEN @V_STARTSTEP and @V_ENDSTEP 
+			BEGIN
+				SET @V_STEP_NAME = 'Generate REPORT for team'
+				EXEC dbo.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  							, @V_STEP_ID = @V_STEP_ID
+  							, @V_STEP_NAME = @V_STEP_NAME
+  							, @V_START_DT = @V_SYSTEMTIME
+  							, @V_END_DT = NULL
+  							, @V_STATUS = 'RUNNING'
+  							, @V_ROWS_PROCESSED = NULL
+  							, @V_ACTION = 1
+  							, @V_NOTE = 'Generate REPORT for team'
+
+					EXEC	@RETURN_VALUE = [DBO].USP_CAPINV_RUNDAILY_REPORT @V_ERROR_CODE = @V_ERROR_CODE OUTPUT
+
+				IF 	@RETURN_VALUE = 0
+				BEGIN
+						--UPdate Detail 
+						SET @V_SYSTEMTIME = GETUTCDATE()
+						SET @V_STEP_NAME = @V_STEP_NAME + ' Completed successfully'
+						EXEC dbo.USP_LOG_PROCESS_DETAIL @V_PROCESS_ID = @V_PROCESS_ID
+  									, @V_STEP_ID = @V_STEP_ID
+  									, @V_STEP_NAME = @V_STEP_NAME
+  									, @V_START_DT = NULL
+  									, @V_END_DT = @V_SYSTEMTIME
+  									, @V_STATUS = 'COMPLETED'
+  									, @V_ROWS_PROCESSED = NULL
+  									, @V_ACTION = 2
+  									, @V_NOTE = NULL;
+				END
+			END
 			--Update Process --Complete Process
 			SET @V_SYSTEMTIME = GETUTCDATE()
 			SET @V_STEP_NAME = @V_PROCESS_NAME + ' Completed successfully'

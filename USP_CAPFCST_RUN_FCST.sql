@@ -18,7 +18,7 @@ CREATE PROCEDURE [DBO].[USP_CAPFCST_RUN_FCST]
 * PARAMETERS:   @V_PARENT_PROCESS_ID == PARENT OR CALLING PROCESS ID
 *				@V_ERROR_CODE		== RETURNED ERROR CODE
 *  				
-* ASSUMPTIONS: BOOKING_FINAL, ROUTELINKS AND SCHEDULE TABLES UPDATED
+* ASSUMPTIONS: BOOKING_FINAL, ROUTELINKS AND SCHEDULE, ISC COMMITED,DIM_GEOMASTER TABLES UPDATED
 *
 * INPUT TABLE(S):	
 * OUTPUT TABLE(S):	
@@ -35,14 +35,14 @@ CREATE PROCEDURE [DBO].[USP_CAPFCST_RUN_FCST]
 *				EXEC	@RETURN_VALUE = [DBO].[USP_CAPFCST_RUN_FCST]
 *						@V_RUNDATE = '2017-04-01',
 						@V_SERVICE = '84K',
-						@V_STARTSTEP = 10
-						@V_ENDSTEP = 20
+						@V_STARTSTEP = 10,
+						@V_ENDSTEP = 20,
 *						@V_ERROR_CODE = @V_ERROR_CODE OUTPUT
 *
 *****************************************************************************************************
 * NOTES:
 *  NAME					CREATED        LAST MOD			COMMENTS
-*  DE\ELM               4/17/2017						PROCEDURE CREATED
+*  DE\ELM               10/17/2017						PROCEDURE CREATED
 ****************************************************************************************************/
 	 @V_RUNDATE DATE = NULL
 	,@V_SERVICE VARCHAR(10)
@@ -196,6 +196,20 @@ BEGIN
 				END
 			END
 
+			--Update Process --Complete Process
+			SET @V_SYSTEMTIME = GETUTCDATE()
+			SET @V_STEP_NAME = @V_PROCESS_NAME + ' Completed successfully'
+			EXEC dbo.USP_LOG_PROCESS @V_PROCESS_ID = @V_PROCESS_ID
+								, @V_PROCESS_NAME = @V_PROCESS_NAME
+								, @V_USER_NAME = @V_SYSTEM_USER
+								, @V_START_DT = NULL
+								, @V_END_DT = @V_SYSTEMTIME
+								, @V_STATUS = 'COMPLETED'
+								, @V_ACTION = 2
+								, @V_PARENT_PROCESS_ID = NULL
+								, @V_NOTE = @V_STEP_NAME
+								, @V_START_STEP = 1;
+
 			SET @V_STEP_ID = 40
 			IF @V_STEP_ID BETWEEN @V_STARTSTEP and @V_ENDSTEP 
 			BEGIN
@@ -228,22 +242,11 @@ BEGIN
   									, @V_NOTE = NULL;
 				END
 			END
-			--Update Process --Complete Process
-			SET @V_SYSTEMTIME = GETUTCDATE()
-			SET @V_STEP_NAME = @V_PROCESS_NAME + ' Completed successfully'
-			EXEC dbo.USP_LOG_PROCESS @V_PROCESS_ID = @V_PROCESS_ID
-								, @V_PROCESS_NAME = @V_PROCESS_NAME
-								, @V_USER_NAME = @V_SYSTEM_USER
-								, @V_START_DT = NULL
-								, @V_END_DT = @V_SYSTEMTIME
-								, @V_STATUS = 'COMPLETED'
-								, @V_ACTION = 2
-								, @V_PARENT_PROCESS_ID = NULL
-								, @V_NOTE = @V_STEP_NAME
-								, @V_START_STEP = 1;
+		SET @V_ERROR_CODE = 0
+		RETURN @V_ERROR_CODE
 	END TRY
 	BEGIN CATCH
-		SET @V_ERRORMESSAGE = 'Process to refresh UDF Booking Analysis dataset and create forecast failed: ' + ERROR_MESSAGE()
+		SET @V_ERRORMESSAGE = 'Process to refresh CAPINV forecast failed: ' + ERROR_MESSAGE()
 		SET @V_ERRORSEVERITY = ERROR_SEVERITY()  
 		SET @V_SYSTEMTIME = GETUTCDATE()
 

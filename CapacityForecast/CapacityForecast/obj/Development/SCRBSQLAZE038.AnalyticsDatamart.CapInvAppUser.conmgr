@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="SCRBSQLAZE038.AnalyticsDatamart.CapInvAppUser"
+  DTS:DTSID="{6AF09807-61B8-485E-B7D0-1DA7329D706F}"
+  DTS:CreationName="OLEDB">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectionString="Data Source=SCRBSQLAZE038;User ID=CapInvAppUser;Initial Catalog=AnalyticsDatamart;Provider=SQLNCLI11.1;Persist Security Info=True;Auto Translate=False;">
+      <DTS:Password
+        DTS:Name="Password"
+        Sensitive="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA6njFv8kKzUmgjtHQ5bjSMQAAAAACAAAAAAADZgAAwAAAABAAAADm26sbM+Bo5ZfwcBY3DKNHAAAAAASAAACgAAAAEAAAAP1Qmj9XUI9fg9yQ2B1KYxGAAAAAuocLpcHx6Gu1JEbUCcTgQj3KvPgHU38hmwGHK2MaWfLb8iBmcNp1CfHPLlWOVrOeDkrmx+fAMsieduFE3m357RtY+x1Fo77CiGdj/0b/t6LT2CIrqpZCl/HmHbDB/Z+FJUpCc1DVDvMfu4vgHeyRMB+J3zLOlE/RQFPhDKPkENoUAAAAhKeU6p/NPfWZLXGyZsRO73vIKX0=</DTS:Password>
+    </DTS:ConnectionManager>
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

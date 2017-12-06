@@ -1,0 +1,259 @@
+USE [UIREPOSITORY]
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+IF ( OBJECT_ID('DBO.USP_CAPINV_UI_GET_UPTAKE_DATA', 'P') IS NOT NULL ) 
+   DROP PROCEDURE DBO.USP_CAPINV_UI_GET_UPTAKE_DATA
+GO
+
+CREATE PROCEDURE [DBO].USP_CAPINV_UI_GET_UPTAKE_DATA
+/****************************************************************************************************
+* COPYRIGHT REVENUE ANALYTICS 2017
+* ALL RIGHTS RESERVED
+*
+* CREATED BY: DATA ENGINEERING
+* FILENAME:   USP_CAPINV_UI_GET_UPTAKE_DATA.SQL
+* DATE:       11/24/2017
+*
+* APPLICATION:  SEARCH FOR A Uptake data vessel/voyage/service
+*               
+* PARAMETERS:  	@V_VESSEL		== Vessel
+*				@V_Voyage		== Voyage
+*				@V_Service		== Service
+*  				@V_FROMPORT		== Departure port
+*				@V_TOPORT		== Arrival Port
+
+* INPUT(S):		analyticsdatamart.dbo.capinv_ui_agg_freeSale_Uboat
+*				
+* OUTPUT(S):	Data table
+*
+* ASSUMPTIONS: 
+*
+DECLARE	@return_value int,
+		@V_ERROR_CODE int
+
+SELECT	@V_ERROR_CODE = 0
+
+EXEC	@return_value = [dbo].[USP_CAPINV_UI_GET_UPTAKE_DATA]
+*				@V_VESSEL		='008',
+*				@V_Voyage		='1711',
+*				@V_Service		='FW2',
+*				@V_ServiceCodeDirection = 'N'
+*  				@V_FROMPORT		='CNSGH',
+*				@V_TOPORT		= 'CNNPO',
+*				@V_ERROR_CODE = @V_ERROR_CODE OUTPUT
+*
+*  SELECT	@V_ERROR_CODE as N'@V_ERROR_CODE'
+*
+* SELECT	'Return Value' = @return_value
+* GO
+*****************************************************************************************************
+* NOTES:
+*  NAME					CREATED			LAST MOD		COMMENTS
+*  DE\ELM               12/05/2017						PROCEDURE CREATED
+****************************************************************************************************/
+  @V_VESSEL VARCHAR(50) = NULL
+, @V_VOYAGE VARCHAR(50) = NULL
+, @V_SERVICE VARCHAR(5) = NULL
+, @V_FROMPORT VARCHAR(50) = NULL
+, @V_TOPORT VARCHAR(50) = NULL
+, @V_SERVICECODEDIRECTION VARCHAR(50) = NULL
+, @V_ERROR_CODE INT OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON 
+	--DECLARE VARIABLES
+	DECLARE @V_ERRORMESSAGE NVARCHAR(4000)  
+	DECLARE @V_ERRORSEVERITY INT  
+	DECLARE @V_DFU_AFFECTED_FFE INT
+	DECLARE @V_TOTALFFE INT
+
+ 	BEGIN TRY
+			 select nn.[ID]
+					,nn.[RUNID]
+					,nn.[RUNDATE]
+					,nn.daystodeparture
+					,nn.[VESSEL]
+					,nn.[VOYAGE]
+					,nn.[SERVICE]
+					,nn.[SERVICE CODE DIRECTION]
+					,nn.[DEPARTURE PORTCALL]
+					,nn.[DEPARTURE PORTCITY]
+					,nn.[ARRIVAL PORTCALL]
+					,nn.[ARRIVAL PORTCITY]
+					,nn.[LEGSEQID]
+					,nn.[DEPARTURE]
+					,nn.[WEEK_OF_YEAR]
+					,nn.[ARRIVAL]
+					,nn.[MSK ALLOCATION TEU]
+					,nn.[MSK ALLOCATION MTS]
+					,nn.[MSK ALLOCATION PLUGS]
+					,nn.[EMPTY ALLOCATION TEU]
+					,nn.[EMPTY ALLOCATION MTS]
+					,nn.[COMMITMENT ALLOCATION TEU]
+					,nn.[COMMITMENT ALLOCATION MTS]
+					,nn.[COMMITMENT ALLOCATION PLUGS]
+					,nn.[COMMITMENT CONSUMPTION TEU]
+					,nn.[COMMITMENT CONSUMPTION MTS]
+					,nn.[COMMITMENT CONSUMPTION PLUGS]
+					,nn.[FREESALE AVAILABLE TEU - BEFORE OVERBOOKING]
+					,nn.[FREESALE AVAILABLE MTS - BEFORE OVERBOOKING]
+					,nn.[FREESALE AVAILABLE PLUGS - BEFORE OVERBOOKING]
+					,nn.[FREESALE AVAILABLE TEU - INCL.  OVERBOOKING]
+					,nn.[FREESALE AVAILABLE MTS - INCL.  OVERBOOKING]
+					,nn.[FREESALE AVAILABLE PLUGS - INCL.  OVERBOOKING]
+					,nn.[FREESALE CONSUMPTION TEU]
+					,nn.[OOG DISPLACEMENT TEU]
+					,nn.[FREESALE CONSUMPTION AND DISPLACEMENT TEU TOTAL]
+					,nn.[FREESALE CONSUMPTION MTS]
+					,nn.[FREESALE CONSUMPTION PLUGS]
+					,nn.[REMAINING CAPACITY TEU - BEFORE OOG DISPLACEMENT]
+					,nn.[REMAINING CAPACITY TEU - INCL. OOG DISPLACEMENT]
+					,nn.[REMAINING CAPACITY MTS]
+					,nn.[REMAINING CAPACITY PLUGS]
+					,nn.[ISC INDICATOR (LEAD TRADE / ISC1)]
+					,nn.[SERVICENAME]
+					,nn.[VESSELNAME]
+			into #tmpScrData
+			from ANALYTICSDATAMART.DBO.CAPFCST_UI_FREESALE_UBOAT_UPTAKE nn
+			where vessel = @V_VESSEL
+			and voyage = @V_VOYAGE
+			and service = @V_SERVICE
+			and nn.[SERVICE CODE DIRECTION] = @V_SERVICECODEDIRECTION
+			and [Departure PortCall] = @V_FROMPORT
+			and [arrival portcall] = @V_TOPORT
+			and rundate <= departure 
+			
+			--Get matching historical data
+			;with rankData as
+			(
+				select g.vessel, g.voyage, g.service, g.[service code direction],[DEPARTURE PORTCALL],[ARRIVAL PORTCALL]
+						,g.departure,row_number() over (partition by g.vessel, g.voyage, g.service, g.[service code direction] order by g.departure desc) as rowNum
+				from 
+				(
+					select distinct vessel, voyage, service, [service code direction],departure,[DEPARTURE PORTCALL],[ARRIVAL PORTCALL]
+					from ANALYTICSDATAMART.DBO.CAPFCST_UI_FREESALE_UBOAT_UPTAKE a
+					where service = @V_SERVICE
+					and [SERVICE CODE DIRECTION] = @V_SERVICECODEDIRECTION
+					and [Departure PortCall] = @V_FROMPORT
+					and [arrival portcall] = @V_TOPORT
+					and vessel <> @V_VESSEL
+					and voyage <> @V_VOYAGE
+				)g
+			)
+			select nn.[ID]
+					,nn.[RUNID]
+					,nn.[RUNDATE]
+					,nn.daystodeparture
+					,nn.[VESSEL]
+					,nn.[VOYAGE]
+					,nn.[SERVICE]
+					,nn.[SERVICE CODE DIRECTION]
+					,nn.[DEPARTURE PORTCALL]
+					,nn.[DEPARTURE PORTCITY]
+					,nn.[ARRIVAL PORTCALL]
+					,nn.[ARRIVAL PORTCITY]
+					,nn.[LEGSEQID]
+					,nn.[DEPARTURE]
+					,nn.[WEEK_OF_YEAR]
+					,nn.[ARRIVAL]
+					,nn.[MSK ALLOCATION TEU]
+					,nn.[MSK ALLOCATION MTS]
+					,nn.[MSK ALLOCATION PLUGS]
+					,nn.[EMPTY ALLOCATION TEU]
+					,nn.[EMPTY ALLOCATION MTS]
+					,nn.[COMMITMENT ALLOCATION TEU]
+					,nn.[COMMITMENT ALLOCATION MTS]
+					,nn.[COMMITMENT ALLOCATION PLUGS]
+					,nn.[COMMITMENT CONSUMPTION TEU]
+					,nn.[COMMITMENT CONSUMPTION MTS]
+					,nn.[COMMITMENT CONSUMPTION PLUGS]
+					,nn.[FREESALE AVAILABLE TEU - BEFORE OVERBOOKING]
+					,nn.[FREESALE AVAILABLE MTS - BEFORE OVERBOOKING]
+					,nn.[FREESALE AVAILABLE PLUGS - BEFORE OVERBOOKING]
+					,nn.[FREESALE AVAILABLE TEU - INCL.  OVERBOOKING]
+					,nn.[FREESALE AVAILABLE MTS - INCL.  OVERBOOKING]
+					,nn.[FREESALE AVAILABLE PLUGS - INCL.  OVERBOOKING]
+					,nn.[FREESALE CONSUMPTION TEU]
+					,nn.[OOG DISPLACEMENT TEU]
+					,nn.[FREESALE CONSUMPTION AND DISPLACEMENT TEU TOTAL]
+					,nn.[FREESALE CONSUMPTION MTS]
+					,nn.[FREESALE CONSUMPTION PLUGS]
+					,nn.[REMAINING CAPACITY TEU - BEFORE OOG DISPLACEMENT]
+					,nn.[REMAINING CAPACITY TEU - INCL. OOG DISPLACEMENT]
+					,nn.[REMAINING CAPACITY MTS]
+					,nn.[REMAINING CAPACITY PLUGS]
+					,nn.[ISC INDICATOR (LEAD TRADE / ISC1)]
+					,nn.[SERVICENAME]
+					,nn.[VESSELNAME]
+			from ANALYTICSDATAMART.DBO.CAPFCST_UI_FREESALE_UBOAT_UPTAKE nn
+			inner join rankData gg
+			on nn.vessel = gg.vessel
+			and nn.voyage = gg.voyage
+			and nn.service = gg.service
+			and nn.[service code direction] = gg.[service code direction]
+			and nn.departure = gg.departure
+			and nn.[DEPARTURE PORTCALL] = gg.[DEPARTURE PORTCALL]
+			and nn.[ARRIVAL PORTCALL] = gg.[ARRIVAL PORTCALL]
+			and gg.rowNum <= 5
+			UNION ALL
+			 select [ID]
+					,[RUNID]
+					,[RUNDATE]
+					,daystodeparture
+					,[VESSEL]
+					,[VOYAGE]
+					,[SERVICE]
+					,[SERVICE CODE DIRECTION]
+					,[DEPARTURE PORTCALL]
+					,[DEPARTURE PORTCITY]
+					,[ARRIVAL PORTCALL]
+					,[ARRIVAL PORTCITY]
+					,[LEGSEQID]
+					,[DEPARTURE]
+					,[WEEK_OF_YEAR]
+					,[ARRIVAL]
+					,[MSK ALLOCATION TEU]
+					,[MSK ALLOCATION MTS]
+					,[MSK ALLOCATION PLUGS]
+					,[EMPTY ALLOCATION TEU]
+					,[EMPTY ALLOCATION MTS]
+					,[COMMITMENT ALLOCATION TEU]
+					,[COMMITMENT ALLOCATION MTS]
+					,[COMMITMENT ALLOCATION PLUGS]
+					,[COMMITMENT CONSUMPTION TEU]
+					,[COMMITMENT CONSUMPTION MTS]
+					,[COMMITMENT CONSUMPTION PLUGS]
+					,[FREESALE AVAILABLE TEU - BEFORE OVERBOOKING]
+					,[FREESALE AVAILABLE MTS - BEFORE OVERBOOKING]
+					,[FREESALE AVAILABLE PLUGS - BEFORE OVERBOOKING]
+					,[FREESALE AVAILABLE TEU - INCL.  OVERBOOKING]
+					,[FREESALE AVAILABLE MTS - INCL.  OVERBOOKING]
+					,[FREESALE AVAILABLE PLUGS - INCL.  OVERBOOKING]
+					,[FREESALE CONSUMPTION TEU]
+					,[OOG DISPLACEMENT TEU]
+					,[FREESALE CONSUMPTION AND DISPLACEMENT TEU TOTAL]
+					,[FREESALE CONSUMPTION MTS]
+					,[FREESALE CONSUMPTION PLUGS]
+					,[REMAINING CAPACITY TEU - BEFORE OOG DISPLACEMENT]
+					,[REMAINING CAPACITY TEU - INCL. OOG DISPLACEMENT]
+					,[REMAINING CAPACITY MTS]
+					,[REMAINING CAPACITY PLUGS]
+					,[ISC INDICATOR (LEAD TRADE / ISC1)]
+					,[SERVICENAME]
+					,[VESSELNAME]
+			from #tmpScrData
+
+	END TRY
+	BEGIN CATCH
+		SET @V_ERRORMESSAGE = 'NO RECORDS FOUND'
+		RETURN @V_ERRORMESSAGE
+	END CATCH
+END
+
+
+

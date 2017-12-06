@@ -146,7 +146,7 @@ BEGIN
 			;with rankData as
 			(
 				select g.vessel, g.voyage, g.service, g.[service code direction],[DEPARTURE PORTCALL],[ARRIVAL PORTCALL]
-						,g.departure,row_number() over (partition by g.vessel, g.voyage, g.service, g.[service code direction] order by g.departure desc) as rowNum
+						,g.departure,row_number() over (partition by g.service, g.[service code direction],[DEPARTURE PORTCALL],[ARRIVAL PORTCALL] order by g.departure desc) as rowNum
 				from 
 				(
 					select distinct vessel, voyage, service, [service code direction],departure,[DEPARTURE PORTCALL],[ARRIVAL PORTCALL]
@@ -157,6 +157,7 @@ BEGIN
 					and [arrival portcall] = @V_TOPORT
 					and vessel <> @V_VESSEL
 					and voyage <> @V_VOYAGE
+					and departure <= (select departure from #tmpScrData where rundate = (select max (rundate) from #tmpScrData))
 				)g
 			)
 			select nn.[ID]
@@ -310,7 +311,7 @@ BEGIN
 					,nn.[SERVICENAME]
 					,nn.[VESSELNAME]
 			from #results nn
-			order by nn.daystodeparture
+			order by nn.daystodeparture desc
 	END TRY
 	BEGIN CATCH
 		SET @V_ERRORMESSAGE = 'NO RECORDS FOUND'

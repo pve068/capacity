@@ -673,6 +673,25 @@ BEGIN
   					, @V_ACTION = 2
   					, @V_NOTE = @V_NOTE;
 
+					--In order to handle change in schedules
+					select [VESSEL]
+							,[VOYAGE]
+							,[SERVICE]
+							,[SERVICE CODE DIRECTION]
+							,[DEPARTURE PORTCALL]
+							,[ARRIVAL PORTCALL]
+							,daystodeparture
+							,max([RUNDATE]) as [RUNDATE]
+					into #uptakeData
+					from analyticsdatamart.dbo.vw_AD_CAPFCST_FREESALE_UBOAT nn
+					group by [VESSEL]
+							,[VOYAGE]
+							,[SERVICE]
+							,[SERVICE CODE DIRECTION]
+							,[DEPARTURE PORTCALL]
+							,[ARRIVAL PORTCALL]
+							,daystodeparture
+
 		IF OBJECT_ID('ANALYTICSDATAMART.DBO.CAPFCST_UI_FREESALE_UBOAT_UPTAKE', 'U') IS NOT NULL
 		  DROP TABLE ANALYTICSDATAMART.DBO.CAPFCST_UI_FREESALE_UBOAT_UPTAKE;
 
@@ -723,6 +742,15 @@ BEGIN
 					,nn.[VESSELNAME]
 			into ANALYTICSDATAMART.DBO.CAPFCST_UI_FREESALE_UBOAT_UPTAKE
 			from analyticsdatamart.dbo.vw_AD_CAPFCST_FREESALE_UBOAT nn
+			inner join  #uptakeData dd
+			on nn.vessel = dd.vessel
+			and nn.voyage = dd.voyage
+			and nn.service = dd.service
+			and nn.[service code direction] = dd.[service code direction]
+			and nn.[departure portcall] = dd.[departure portcall]
+			and nn.[arrival portcall] = dd.[arrival portcall]
+			and nn.rundate = dd.rundate
+			option (maxdop  8);
 
 			create clustered index cdx_CAPFCST_UI_FREESALE_UBOAT_UPTAKE on ANALYTICSDATAMART.DBO.CAPFCST_UI_FREESALE_UBOAT_UPTAKE(vessel,voyage,service)
 

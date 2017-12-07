@@ -12,11 +12,11 @@
   <DataSourceViews />
   <DeploymentModelSpecificContent>
     <Manifest>
-      <SSIS:Project SSIS:ProtectionLevel="EncryptSensitiveWithUserKey" xmlns:SSIS="www.microsoft.com/SqlServer/SSIS">
+      <SSIS:Project SSIS:ProtectionLevel="EncryptSensitiveWithPassword" xmlns:SSIS="www.microsoft.com/SqlServer/SSIS">
         <SSIS:Properties>
           <SSIS:Property SSIS:Name="ID">{33124ad9-08ea-4f59-8977-76683b190261}</SSIS:Property>
           <SSIS:Property SSIS:Name="Name">CapacityForecast</SSIS:Property>
-          <SSIS:Property SSIS:Name="VersionMajor">1</SSIS:Property>
+          <SSIS:Property SSIS:Name="VersionMajor">0</SSIS:Property>
           <SSIS:Property SSIS:Name="VersionMinor">0</SSIS:Property>
           <SSIS:Property SSIS:Name="VersionBuild">0</SSIS:Property>
           <SSIS:Property SSIS:Name="VersionComments">
@@ -26,7 +26,7 @@
           <SSIS:Property SSIS:Name="CreatorComputerName">DKNCNU407904G</SSIS:Property>
           <SSIS:Property SSIS:Name="Description">
           </SSIS:Property>
-          <SSIS:Property SSIS:Name="PasswordVerifier" SSIS:Sensitive="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA6njFv8kKzUmgjtHQ5bjSMQAAAAACAAAAAAADZgAAwAAAABAAAABVsGmW6yEpzqzykbcO8FaWAAAAAASAAACgAAAAEAAAAOYIsXnxnTnCmABJjkPPeNGIAAAAgUAoDGuew20pQaE5fraVGjw91cNgebj7gJAgGim5czplKWyppr9pnUm2mcgP5F8LbPrXe+KtE+reGR56dmL8es3KwYdnAngJ6rtvnOH3N1PN33FoTdtlAWdqluGmMdXqvoZy5WBByf4thAvhEgnoLK/jIZtApMSbiH1GjWGilMVIy+izB6zSgBQAAAAsfcGMJpjSWapUPwzrS2buVNv4XQ==</SSIS:Property>
+          <SSIS:Property SSIS:Name="PasswordVerifier" SSIS:Sensitive="1" SSIS:Salt="wlBuhDPfTA==" SSIS:IV="Dgh1AAt7NwA=">O4V5RlwVvTkDUVCLc4gdsapczLT8lfHpAJlOtvlyZB0SI9bmI/YU7fI0Ue9mc9Kk4s/q3peENBX3fmN3SMsNmNz7lFqFDNNqpEh9iesq7+jBn+0MrZRpi6WcyCuIpfs9TKLK9ECSszVkYMf5oyH7stIM5O/jMRLWr/x/1PUmh0H3UUsNor1iEg==</SSIS:Property>
           <SSIS:Property SSIS:Name="FormatVersion">1</SSIS:Property>
         </SSIS:Properties>
         <SSIS:Packages>
@@ -134,14 +134,14 @@
                 <SSIS:Property SSIS:Name="Name">CapacityFcstWorkflow</SSIS:Property>
                 <SSIS:Property SSIS:Name="VersionMajor">1</SSIS:Property>
                 <SSIS:Property SSIS:Name="VersionMinor">0</SSIS:Property>
-                <SSIS:Property SSIS:Name="VersionBuild">22</SSIS:Property>
+                <SSIS:Property SSIS:Name="VersionBuild">23</SSIS:Property>
                 <SSIS:Property SSIS:Name="VersionComments">
                 </SSIS:Property>
-                <SSIS:Property SSIS:Name="VersionGUID">{2FC12818-B799-491E-8414-C22D4A4FAF8B}</SSIS:Property>
+                <SSIS:Property SSIS:Name="VersionGUID">{603E11AD-309D-4FCD-9F96-A9132D22B097}</SSIS:Property>
                 <SSIS:Property SSIS:Name="PackageFormatVersion">8</SSIS:Property>
                 <SSIS:Property SSIS:Name="Description">
                 </SSIS:Property>
-                <SSIS:Property SSIS:Name="ProtectionLevel">1</SSIS:Property>
+                <SSIS:Property SSIS:Name="ProtectionLevel">2</SSIS:Property>
               </SSIS:Properties>
               <SSIS:Parameters>
                 <SSIS:Parameter SSIS:Name="CM.SMTP Connection Manager.ConnectionString">

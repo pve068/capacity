@@ -2,14 +2,18 @@
 <BuildLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ProjectInfo>
     <Name>CapacityForecast</Name>
-    <LastWriteTime>2017-12-05T06:53:20.1275846Z</LastWriteTime>
-    <LastKnownProtectionLevel>EncryptSensitiveWithUserKey</LastKnownProtectionLevel>
+    <LastWriteTime>2017-12-07T18:33:01.2853945Z</LastWriteTime>
+    <LastKnownProtectionLevel>EncryptSensitiveWithPassword</LastKnownProtectionLevel>
+    <Salt>Q2rklTTG</Salt>
+    <LastKnownProtectedHashedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA6njFv8kKzUmgjtHQ5bjSMQAAAAACAAAAAAADZgAAwAAAABAAAADJI9NrxGTtIttrBfYpj6dsAAAAAASAAACgAAAAEAAAAFEeivI8kC8w6AO0xjMt/LIoAAAAoYMtL8Ss/JoF1NDtv1YmN7q3GKWhtbCmMPNjCQZtYHUXO0wQ1NMDrxQAAAC+fiAeojNhjNR7I4+ddyIIKU5ToA==</LastKnownProtectedHashedPassword>
   </ProjectInfo>
   <LastBuildInfos>
     <ProjectBuildItemInfo>
       <Name>CapacityFcstWorkflow.dtsx</Name>
-      <LastWriteTime>2017-12-05T20:20:59.3786849Z</LastWriteTime>
-      <LastKnownProtectionLevel>EncryptSensitiveWithUserKey</LastKnownProtectionLevel>
+      <LastWriteTime>2017-12-07T18:32:04.3892259Z</LastWriteTime>
+      <LastKnownProtectionLevel>EncryptSensitiveWithPassword</LastKnownProtectionLevel>
+      <Salt>Yrk0RIMM</Salt>
+      <LastKnownProtectedHashedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA6njFv8kKzUmgjtHQ5bjSMQAAAAACAAAAAAADZgAAwAAAABAAAAA2+5Y3sMtIK0kDy6XSM3t3AAAAAASAAACgAAAAEAAAAPTT+SQ+CV4ZGppx3ymaDeEoAAAAn9AJ/n9c2Wq7fnkbW6R4+qC8qu+oZzBuGE32j3CAZ7G/N5q/cgd4+RQAAABfp1R+xcpjYqdW2rXknqtEEkzxvw==</LastKnownProtectedHashedPassword>
     </ProjectBuildItemInfo>
   </LastBuildInfos>
 </BuildLog>

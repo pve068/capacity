@@ -8,7 +8,9 @@
       DTS:ConnectionString="Data Source=SCRBSQLAZE038;User ID=CapInvAppUser;Initial Catalog=AnalyticsDatamart;Provider=SQLNCLI11.1;Persist Security Info=True;Auto Translate=False;">
       <DTS:Password
         DTS:Name="Password"
-        Sensitive="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA6njFv8kKzUmgjtHQ5bjSMQAAAAACAAAAAAADZgAAwAAAABAAAABclOLzHYvwxVb7BoNhZOvmAAAAAASAAACgAAAAEAAAAFvpU/MFfaHgksf8mxYnr+6AAAAA3/6KW4fEzcGGkf1nwwPMmBlPnMKamGGT5RT/+NwRHW9t5CHpy/rkRVxd4WOi8FLe0PqPpem/31o/KWNuLv4YWsgVhJGf7w1dzPzy2FgAgUiw1pcN07nfv9sqaJxle/baatn2A9fKEWmrg50wYTqAW2v/6rHyRNtnQ3eHtJR1bb4UAAAA7dgWNldU9Df+RAuY5Arfy36ENBE=</DTS:Password>
+        Sensitive="1"
+        p4:Salt="0WIGt5sOVA=="
+        p4:IV="+LXbLcTYyAY=" xmlns:p4="www.microsoft.com/SqlServer/SSIS">/1497ZD8MflQQ3IRliZuG2SVOHyODsHnc69zKO8VCTq3V4d2eP3/ccrGAE/QWij5EkNNYBNikYeGIxHm5kP/OcbjxfPV1ppmFh7WN8D1dJMziWpp05QF8QUJrfnvow8sryWO8DU+Kc40kcsdWgZU9kGeZgR76WURTI1bYscyod0=</DTS:Password>
     </DTS:ConnectionManager>
   </DTS:ObjectData>
 </DTS:ConnectionManager>

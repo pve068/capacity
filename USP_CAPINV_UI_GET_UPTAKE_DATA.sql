@@ -155,8 +155,7 @@ BEGIN
 					and [SERVICE CODE DIRECTION] = @V_SERVICECODEDIRECTION
 					and [Departure PortCall] = @V_FROMPORT
 					and [arrival portcall] = @V_TOPORT
-					and vessel <> @V_VESSEL
-					and voyage <> @V_VOYAGE
+					and vessel+voyage <> @V_VESSEL+@V_VOYAGE
 					and departure <= (select departure from #tmpScrData where rundate = (select max (rundate) from #tmpScrData))
 				)g
 			)

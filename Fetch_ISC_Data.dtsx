@@ -1,0 +1,823 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/18/2018 12:06:05 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="DKN5CG7373C5H"
+  DTS:CreatorName="CRB\BSI044"
+  DTS:DTSID="{136E480A-6832-4EA1-89F5-FA276637D754}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2164.0"
+  DTS:LocaleID="1030"
+  DTS:ObjectName="Fetch_ISC_Data"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="2"
+  DTS:VersionBuild="23"
+  DTS:VersionGUID="{1F32C665-C1AD-4D78-83D0-ED85D06D2840}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[scrbaglaze003.ETLRepository.MLAppUser]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{DE65C015-D831-4479-B9B5-15E39940ABF9}"
+      DTS:ObjectName="scrbaglaze003.ETLRepository.MLAppUser">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=scrbaglaze003;User ID=MLAppUser;Initial Catalog=ETLRepository;Provider=SQLNCLI11.1;Persist Security Info=True;Auto Translate=False;">
+          <EncryptedData
+            Type="http://www.w3.org/2001/04/xmlenc#Element"
+            Salt="bYKMwwfu4w=="
+            IV="p/njcSSUafo=" xmlns="http://www.w3.org/2001/04/xmlenc#">
+            <EncryptionMethod
+              Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
+            <CipherData>
+              <CipherValue>p/njcSSUafpHRLi5s+5+5qQTKu+keqkgF8iUZaMLO2Q/d4AHNKVsX+89utcsT4Ac12Nxh1z47DmCRv16b/j1vcGP3S+hF0QzdHApSye5RTyXNBR9tXQEauhYmj7A808tmio3D/rU4NBSm2+e6vCluXABZ2/zu4Ra3Gd+/1Ho3y4=</CipherValue>
+            </CipherData>
+          </EncryptedData>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[SCRBNETDERUE601\NET_DB_DEV.NET_Analysis.NET_ISC_user]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{28F7B985-73E6-4EF2-809F-8DB4790B113F}"
+      DTS:ObjectName="SCRBNETDERUE601\NET_DB_DEV.NET_Analysis.NET_ISC_user">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=SCRBNETDERUE601\NET_DB_DEV;User ID=NET_ISC_user;Initial Catalog=NET_Analysis;Provider=SQLNCLI11.1;Persist Security Info=True;Auto Translate=False;">
+          <EncryptedData
+            Type="http://www.w3.org/2001/04/xmlenc#Element"
+            Salt="BDz/mxEVHQ=="
+            IV="EFOlfSmoI8Y=" xmlns="http://www.w3.org/2001/04/xmlenc#">
+            <EncryptionMethod
+              Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc" />
+            <CipherData>
+              <CipherValue>EFOlfSmoI8Y9iGrI4o51sCLE0Wps1ZKCWwq2Z0c0YZUo8AvOujd70i8Je+qwEHRAVxd1i5kehepg1i1MNOWjJQJflgvqpvfg1WmsQXTIFvgQ/6gYIlgEmRhTJKozUXxvwE3tu8dk1IRMCY1ia5MkhxLMdCkWAqwjr4UL5Fr/ugRdYoAda8MyGA==</CipherValue>
+            </CipherData>
+          </EncryptedData>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{C90B4F0E-DF03-4059-943A-7639E41F3274}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="auditversionid">
+      <DTS:VariableValue
+        DTS:DataType="8">0</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{FB25CCC8-8E29-4460-A9A8-AC292F6102E2}"
+      DTS:EvaluateAsExpression="True"
+      DTS:Expression="&quot;SELECT      &quot; + @[User::auditversionid] +&quot; as auditversionid,  DepartureDirection AS DepServiceDir,&#xA;              SvcCode AS ServiceCode,&#xA;              SellingRoute,&#xA;              BuyingRoute,&#xA;              LegFrom AS FromPort,&#xA;              LegTo AS ToPort,       &#xA;             SUM(COALESCE(NET_TEU,0)) AS TEU,&#xA;              SUM(CASE WHEN CARGOTYPE='REEF' THEN COALESCE(NET_TEU,0) ELSE 0 END) AS ReefPlugs,&#xA;              SUM(NET_MT) AS Weight_MTS&#xA;FROM [Isc].[vwISCOverviewPublish]&#xA;WHERE BuyingBrand='ML'&#xA;GROUP BY &#xA;              DepartureDirection,&#xA;              SvcCode,&#xA;              SellingRoute ,&#xA;              BuyingRoute,&#xA;              LegFrom,&#xA;              LegTo;&quot;"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="sourceQuery">
+      <DTS:VariableValue
+        DTS:DataType="8">SELECT      0 as auditversionid,  DepartureDirection AS DepServiceDir,
+              SvcCode AS ServiceCode,
+              SellingRoute,
+              BuyingRoute,
+              LegFrom AS FromPort,
+              LegTo AS ToPort,       
+             SUM(COALESCE(NET_TEU,0)) AS TEU,
+              SUM(CASE WHEN CARGOTYPE='REEF' THEN COALESCE(NET_TEU,0) ELSE 0 END) AS ReefPlugs,
+              SUM(NET_MT) AS Weight_MTS
+FROM [Isc].[vwISCOverviewPublish]
+WHERE BuyingBrand='ML'
+GROUP BY 
+              DepartureDirection,
+              SvcCode,
+              SellingRoute ,
+              BuyingRoute,
+              LegFrom,
+              LegTo;</DTS:VariableValue>
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\endRun"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{626FDA37-23BB-48BA-83D7-DF6850524E80}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="endRun"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{DE65C015-D831-4479-B9B5-15E39940ABF9}"
+          SQLTask:SqlStatementSource="exec ETLRepository.dbo.etl_updateETLDetail @V_ETLID=9,@V_STATUS='End',@V_AuditVersionID=null;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\iscData"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{CE09B43B-9F7C-4913-928B-83E668F9A62D}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="iscData"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\iscData\stg_CAP_ISC_Committed"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="stg_CAP_ISC_Committed"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[stg_CAP_ISC_Committed]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\iscData\stg_CAP_ISC_Committed.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[scrbaglaze003.ETLRepository.MLAppUser]"
+                  connectionManagerRefId="Package.ConnectionManagers[scrbaglaze003.ETLRepository.MLAppUser]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].Columns[ServiceCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="5"
+                      cachedName="ServiceCode"
+                      externalMetadataColumnId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[ServiceCode]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ServiceCode]" />
+                    <inputColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].Columns[FromPort]"
+                      cachedDataType="wstr"
+                      cachedLength="8"
+                      cachedName="FromPort"
+                      externalMetadataColumnId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[FromPort]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[FromPort]" />
+                    <inputColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].Columns[ToPort]"
+                      cachedDataType="wstr"
+                      cachedLength="8"
+                      cachedName="ToPort"
+                      externalMetadataColumnId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[ToPort]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ToPort]" />
+                    <inputColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].Columns[TEU]"
+                      cachedDataType="r8"
+                      cachedName="TEU"
+                      externalMetadataColumnId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[TEU]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[TEU]" />
+                    <inputColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].Columns[ReefPlugs]"
+                      cachedDataType="r8"
+                      cachedName="ReefPlugs"
+                      externalMetadataColumnId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[ReefPlugs]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ReefPlugs]" />
+                    <inputColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].Columns[auditversionid]"
+                      cachedDataType="i4"
+                      cachedName="auditversionid"
+                      externalMetadataColumnId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[AuditVersionId]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[auditversionid]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[AuditVersionId]"
+                      dataType="i4"
+                      name="AuditVersionId" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[ServiceCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ServiceCode" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[FromPort]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="FromPort" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[ToPort]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="ToPort" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[TEU]"
+                      dataType="i4"
+                      name="TEU" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[ReefPlugs]"
+                      dataType="i4"
+                      name="ReefPlugs" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[WeekNo]"
+                      dataType="i4"
+                      name="WeekNo" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[SellingString]"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
+                      name="SellingString" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[BuyingString]"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
+                      name="BuyingString" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[BuyingCompany]"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
+                      name="BuyingCompany" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input].ExternalColumns[WeightKg]"
+                      dataType="numeric"
+                      name="WeightKg"
+                      precision="18"
+                      scale="2" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\iscData\stg_CAP_ISC_Committed.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\iscData\stg_CAP_ISC_Committed.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\iscData\stg_CAP_ISC_Committed.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\iscData\stg_CAP_ISC_Committed.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\iscData\vwISCOverviewPublish"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="vwISCOverviewPublish"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">SELECT @[User::auditversionid] as auditversionid, DepartureDirection AS DepServiceDir, SvcCode AS ServiceCode, SellingRoute, BuyingRoute, LegFrom AS FromPort, LegTo AS ToPort, SUM(CASE WHEN CARGOTYPE = 'DRY' THEN NET_TEU ELSE 0 END) AS TEU, 
+             SUM(CASE WHEN CARGOTYPE = 'REEF' THEN NET_TEU ELSE 0 END) AS ReefPlugs, SUM(NET_MT) AS Weight_MTS
+FROM   ISC.vwISCOverviewPublish
+WHERE (BuyingBrand = 'ML')
+GROUP BY DepartureDirection, SvcCode, SellingRoute, BuyingRoute, LegFrom, LegTo</property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable">User::sourceQuery</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\iscData\vwISCOverviewPublish.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[SCRBNETDERUE601\NET_DB_DEV.NET_Analysis.NET_ISC_user]"
+                  connectionManagerRefId="Package.ConnectionManagers[SCRBNETDERUE601\NET_DB_DEV.NET_Analysis.NET_ISC_user]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[DepServiceDir]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[DepServiceDir]"
+                      length="50"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[DepServiceDir]"
+                      name="DepServiceDir"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ServiceCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[ServiceCode]"
+                      length="5"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ServiceCode]"
+                      name="ServiceCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[SellingRoute]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[SellingRoute]"
+                      length="3"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[SellingRoute]"
+                      name="SellingRoute"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[BuyingRoute]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[BuyingRoute]"
+                      length="3"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[BuyingRoute]"
+                      name="BuyingRoute"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[FromPort]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[FromPort]"
+                      length="8"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[FromPort]"
+                      name="FromPort"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ToPort]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[ToPort]"
+                      length="8"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ToPort]"
+                      name="ToPort"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[TEU]"
+                      dataType="r8"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[TEU]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[TEU]"
+                      name="TEU"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ReefPlugs]"
+                      dataType="r8"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[ReefPlugs]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[ReefPlugs]"
+                      name="ReefPlugs"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[Weight_MTS]"
+                      dataType="r8"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[Weight_MTS]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[Weight_MTS]"
+                      name="Weight_MTS"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[auditversionid]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[auditversionid]"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].Columns[auditversionid]"
+                      name="auditversionid"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[DepServiceDir]"
+                      dataType="wstr"
+                      length="50"
+                      name="DepServiceDir" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[ServiceCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="5"
+                      name="ServiceCode" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[SellingRoute]"
+                      dataType="wstr"
+                      length="3"
+                      name="SellingRoute" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[BuyingRoute]"
+                      dataType="wstr"
+                      length="3"
+                      name="BuyingRoute" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[FromPort]"
+                      dataType="wstr"
+                      length="8"
+                      name="FromPort" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[ToPort]"
+                      dataType="wstr"
+                      length="8"
+                      name="ToPort" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[TEU]"
+                      dataType="r8"
+                      name="TEU" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[ReefPlugs]"
+                      dataType="r8"
+                      name="ReefPlugs" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[Weight_MTS]"
+                      dataType="r8"
+                      name="Weight_MTS" />
+                    <externalMetadataColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output].ExternalColumns[auditversionid]"
+                      dataType="i4"
+                      name="auditversionid" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[auditversionid]"
+                      dataType="i4"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[auditversionid]"
+                      name="auditversionid" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[DepServiceDir]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[DepServiceDir]"
+                      name="DepServiceDir" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ServiceCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="5"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ServiceCode]"
+                      name="ServiceCode" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[SellingRoute]"
+                      dataType="wstr"
+                      length="3"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[SellingRoute]"
+                      name="SellingRoute" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[BuyingRoute]"
+                      dataType="wstr"
+                      length="3"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[BuyingRoute]"
+                      name="BuyingRoute" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[FromPort]"
+                      dataType="wstr"
+                      length="8"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[FromPort]"
+                      name="FromPort" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ToPort]"
+                      dataType="wstr"
+                      length="8"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ToPort]"
+                      name="ToPort" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[TEU]"
+                      dataType="r8"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[TEU]"
+                      name="TEU" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ReefPlugs]"
+                      dataType="r8"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ReefPlugs]"
+                      name="ReefPlugs" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[Weight_MTS]"
+                      dataType="r8"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[Weight_MTS]"
+                      name="Weight_MTS" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\iscData.Paths[OLE DB Source Output]"
+              endId="Package\iscData\stg_CAP_ISC_Committed.Inputs[OLE DB Destination Input]"
+              name="OLE DB Source Output"
+              startId="Package\iscData\vwISCOverviewPublish.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\startRun"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{85BBA3B9-79CB-42A5-8880-58BFDC860DB5}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="startRun"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{DE65C015-D831-4479-B9B5-15E39940ABF9}"
+          SQLTask:SqlStatementSource="declare @V_AuditVersionID int&#xA;exec @V_AuditVersionID=ETLRepository.dbo.etl_updateETLDetail @V_ETLID=9,@V_STATUS='Start',@V_AuditVersionID=null;&#xA;&#xA;select @V_AuditVersionID as auditversionid"
+          SQLTask:ResultType="ResultSetType_SingleRow" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask">
+          <SQLTask:ResultBinding
+            SQLTask:ResultName="auditversionid"
+            SQLTask:DtsVariableName="User::auditversionid" />
+        </SQLTask:SqlTaskData>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{EC6BA5B9-5D09-4D11-8E63-2C9FCDCAFF96}"
+      DTS:From="Package\startRun"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\iscData" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 2]"
+      DTS:CreationName=""
+      DTS:DTSID="{625537C5-306C-42CA-9A8D-779A66445DBA}"
+      DTS:From="Package\iscData"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 2"
+      DTS:To="Package\endRun" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="116,43"
+          Id="Package\endRun"
+          TopLeft="79.1666654869913,315.833328567942" />
+        <NodeLayout
+          Size="113,43"
+          Id="Package\iscData"
+          TopLeft="76.7499989382922,206.999996396899" />
+        <NodeLayout
+          Size="120,43"
+          Id="Package\startRun"
+          TopLeft="72.9166655801237,29.4666661397616" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="133.166665592541,72.1333328064283">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,134.866663590471"
+              Start="0,0"
+              End="0,127.366663590471">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,127.366663590471" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 2]"
+          TopLeft="135.291665545975,249.666663063566">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,66.1666655043761"
+              Start="0,0"
+              End="0,58.6666655043761">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,58.6666655043761" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\iscData">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="187,43"
+          Id="Package\iscData\vwISCOverviewPublish"
+          TopLeft="5.5,7.23333330233891" />
+        <NodeLayout
+          Size="197,43"
+          Id="Package\iscData\stg_CAP_ISC_Committed"
+          TopLeft="82.5833321847022,102.799998272061" />
+        <EdgeLayout
+          Id="Package\iscData.Paths[OLE DB Source Output]"
+          TopLeft="98.8333333333333,49.8999999690056">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="82.4166655180355,52.8999983030558"
+              Start="0,0"
+              End="82.4166655180355,45.3999983030558">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,22.4499991515279" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,22.4499991515279"
+                    Point2="0,26.4499991515279"
+                    Point3="4,26.4499991515279" />
+                  <mssgle:LineSegment
+                    End="78.4166655180355,26.4499991515279" />
+                  <mssgle:CubicBezierSegment
+                    Point1="78.4166655180355,26.4499991515279"
+                    Point2="82.4166655180355,26.4499991515279"
+                    Point3="82.4166655180355,30.4499991515279" />
+                  <mssgle:LineSegment
+                    End="82.4166655180355,45.3999983030558" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\iscData\stg_CAP_ISC_Committed">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\iscData\vwISCOverviewPublish">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
